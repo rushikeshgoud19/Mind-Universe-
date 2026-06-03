@@ -1,163 +1,175 @@
-import React, { useRef, useState, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, OrbitControls, Sphere, Html, Center, Bounds } from '@react-three/drei';
-import * as THREE from 'three';
+import React, { useState, Suspense, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls, Html, Bounds, Center, useTexture, Sphere } from "@react-three/drei";
+import * as THREE from "three";
 
-// ----------------------------------------------------
-// 3D COMPONENT
-// ----------------------------------------------------
-function EarthScene({ pin, setPin }: { pin: THREE.Vector3 | null, setPin: (v: THREE.Vector3) => void }) {
-  const { scene } = useGLTF('/models/earth.glb');
+// Coordinates for some interesting places (latitude, longitude)
+const LOCATIONS = [
+  { name: "Tokyo", lat: 35.6762, lng: 139.6503 },
+  { name: "New York", lat: 40.7128, lng: -74.0060 },
+  { name: "London", lat: 51.5074, lng: -0.1278 },
+  { name: "Sydney", lat: -33.8688, lng: 151.2093 },
+  { name: "Dubai", lat: 25.2048, lng: 55.2708 },
+  { name: "Mumbai", lat: 19.0760, lng: 72.8777 },
+  { name: "Paris", lat: 48.8566, lng: 2.3522 },
+  { name: "Singapore", lat: 1.3521, lng: 103.8198 },
+  { name: "Rio de Janeiro", lat: -22.9068, lng: -43.1729 },
+  { name: "Cape Town", lat: -33.9249, lng: 18.4241 },
+  { name: "San Francisco", lat: 37.7749, lng: -122.4194 },
+  { name: "Hong Kong", lat: 22.3193, lng: 114.1694 },
+];
+
+// Helper to convert lat/long to 3D sphere coordinates
+function latLongToVector3(lat: number, lng: number, radius: number): THREE.Vector3 {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lng + 180) * (Math.PI / 180);
+
+  const x = -(radius * Math.sin(phi) * Math.cos(theta));
+  const z = radius * Math.sin(phi) * Math.sin(theta);
+  const y = radius * Math.cos(phi);
+
+  return new THREE.Vector3(x, y, z);
+}
+
+function EarthModel({ radius = 2, setActiveLocation }: { radius?: number, setActiveLocation: (loc: string | null) => void }) {
+  // Load high-resolution earth textures directly
+  const [colorMap, normalMap, specularMap] = useTexture([
+    "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
+    "https://unpkg.com/three-globe/example/img/earth-topology.png",
+    "https://unpkg.com/three-globe/example/img/earth-water.png"
+  ]);
+
+  const earthRef = useRef<THREE.Group>(null);
+
+  useFrame(() => {
+    if (earthRef.current) {
+      // Auto-rotate the earth slowly
+      earthRef.current.rotation.y += 0.0005;
+    }
+  });
 
   return (
-    <group>
-      {/* Outer Atmosphere Glow */}
-      <Sphere args={[2.05, 64, 64]}>
-        <meshPhongMaterial 
-          color="#00f0ff" 
-          transparent 
-          opacity={0.15} 
-          side={THREE.BackSide} 
-          blending={THREE.AdditiveBlending} 
-          depthWrite={false} 
-        />
-      </Sphere>
-
-      {/* Earth Model with Raycasting */}
-      <primitive 
-        object={scene} 
-        scale={2}
-        onPointerDown={(e: any) => {
-          e.stopPropagation();
-          setPin(e.point.clone());
-        }}
-        onPointerOver={(e: any) => {
-          e.stopPropagation();
-          document.body.style.cursor = 'crosshair';
-        }}
-        onPointerOut={() => {
-          document.body.style.cursor = 'auto';
-        }}
-      />
-
-      {/* Dropped Pin */}
-      {pin && (
-        <group position={pin}>
-          <Sphere args={[0.04, 16, 16]}>
-            <meshBasicMaterial color="#00f0ff" />
+    <group ref={earthRef}>
+      <Bounds fit clip observe margin={1.2}>
+        <Center>
+          {/* The Textured Earth Sphere */}
+          <Sphere args={[radius, 64, 64]}>
+            <meshPhongMaterial 
+              map={colorMap}
+              normalMap={normalMap}
+              specularMap={specularMap}
+              specular={new THREE.Color("grey")}
+              shininess={15}
+            />
           </Sphere>
-          <Sphere args={[0.08, 16, 16]}>
-            <meshBasicMaterial color="#00f0ff" transparent opacity={0.4} blending={THREE.AdditiveBlending} />
-          </Sphere>
-        </group>
-      )}
+          
+          {/* Add glowing markers for each location */}
+          {LOCATIONS.map((loc, index) => {
+            const position = latLongToVector3(loc.lat, loc.lng, radius * 1.02);
+            return (
+              <group 
+                key={index} 
+                position={position}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveLocation(loc.name);
+                }}
+                onPointerOver={() => document.body.style.cursor = 'pointer'}
+                onPointerOut={() => document.body.style.cursor = 'auto'}
+              >
+                {/* Core dot */}
+                <mesh>
+                  <sphereGeometry args={[0.03, 16, 16]} />
+                  <meshBasicMaterial color="#e5b869" />
+                </mesh>
+                {/* Glow ring */}
+                <mesh>
+                  <sphereGeometry args={[0.06, 16, 16]} />
+                  <meshBasicMaterial color="#e5b869" transparent opacity={0.4} />
+                </mesh>
+              </group>
+            );
+          })}
+        </Center>
+      </Bounds>
     </group>
   );
 }
 
-// ----------------------------------------------------
-// MAIN COMPONENT
-// ----------------------------------------------------
 export default function InteractiveEarth() {
-  const [pin, setPin] = useState<THREE.Vector3 | null>(null);
-  
-  // Calculate Lat/Lng from 3D point (assuming radius roughly 2.0 based on scale={2})
-  let latText = "N/A";
-  let lngText = "N/A";
-
-  if (pin) {
-    const r = Math.sqrt(pin.x * pin.x + pin.y * pin.y + pin.z * pin.z);
-    let lat = Math.asin(pin.y / r) * (180 / Math.PI);
-    let lng = Math.atan2(pin.z, pin.x) * (180 / Math.PI);
-    
-    // Format to 4 decimal places
-    latText = `${Math.abs(lat).toFixed(4)}° ${lat >= 0 ? 'N' : 'S'}`;
-    lngText = `${Math.abs(lng).toFixed(4)}° ${lng >= 0 ? 'E' : 'W'}`;
-  }
+  const [activeLocation, setActiveLocation] = useState<string | null>(null);
 
   return (
-    <section className="relative w-full h-[100dvh] bg-black overflow-hidden font-inter">
+    <section id="interactive-earth" className="relative w-full h-screen bg-[#050509] overflow-hidden flex flex-col items-center justify-center">
       
-      {/* 3D CANVAS (Background) */}
-      <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 7], fov: 35 }}>
-          <ambientLight intensity={0.15} />
-          {/* Main Sun Key Light */}
-          <directionalLight position={[5, 3, 5]} intensity={2.5} color="#ffffff" />
-          {/* Plasma Rim Light */}
-          <pointLight position={[-5, 0, -5]} intensity={1.5} color="#00f0ff" />
+      {/* Overlay UI: Ask the user where they are from */}
+      <div className="absolute top-20 left-0 w-full text-center z-10 pointer-events-none">
+        <h2 className="text-4xl md:text-5xl font-semibold text-white tracking-wide drop-shadow-lg" style={{ fontFamily: '"Cormorant Garamond", serif' }}>
+          Where are you connecting from?
+        </h2>
+        <p className="mt-4 text-[#e5b869] uppercase tracking-[0.2em] text-xs font-semibold drop-shadow-md">
+          Explore the globe and select your sector.
+        </p>
+      </div>
+
+      {/* The 3D Canvas */}
+      <div className="absolute inset-0 w-full h-full">
+        <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
+          <color attach="background" args={["#050509"]} />
+          {/* Much brighter lighting so the untextured sphere is visible! */}
+          <ambientLight intensity={0.8} color="#ffffff" />
+          <directionalLight position={[5, 3, 5]} intensity={3.5} color="#ffffff" />
+          <directionalLight position={[-5, -3, -5]} intensity={1.0} color="#ffffff" />
           
-          <Suspense fallback={<Html center><span className="text-[#00f0ff] font-mono tracking-widest text-xs whitespace-nowrap">CALIBRATING ORBITAL SENSORS...</span></Html>}>
-            <Bounds fit clip observe margin={1.2}>
-              <Center>
-                <EarthScene pin={pin} setPin={setPin} />
-              </Center>
-            </Bounds>
+          <Suspense fallback={<Html center><span className="text-[#e5b869] text-xs tracking-widest">LOADING WORLD...</span></Html>}>
+            <EarthModel setActiveLocation={setActiveLocation} />
           </Suspense>
 
           <OrbitControls 
-            enablePan={false} 
             enableZoom={false} 
+            enablePan={false} 
             autoRotate={true} 
             autoRotateSpeed={0.5} 
           />
         </Canvas>
       </div>
 
-      {/* GLASS HUD OVERLAY */}
-      <div className="absolute z-10 bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 left-0 w-full md:w-[45%] md:pl-16 p-6">
+      {/* Elegant Golden Glass Popup when a location is clicked */}
+      <div className={`absolute z-20 transition-all duration-700 ease-in-out ${activeLocation ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
         <div 
-          className="rounded-t-3xl md:rounded-2xl p-8 md:p-10"
+          className="relative w-[380px] p-8 rounded-2xl flex flex-col items-center text-center shadow-2xl"
           style={{
-            background: "linear-gradient(135deg, rgba(20,20,30,0.6) 0%, rgba(10,10,15,0.4) 100%)",
-            backdropFilter: "blur(24px) saturate(120%)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderTop: "1px solid rgba(0, 240, 255, 0.3)",
-            boxShadow: "0 30px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)"
+            background: "rgba(10, 10, 15, 0.7)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(229, 184, 105, 0.2)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(229,184,105,0.05)"
           }}
         >
-          <span className="block text-[10px] md:text-xs text-[#00f0ff] tracking-[0.3em] font-semibold mb-4 uppercase">
-            Secure Connection
-          </span>
-          
-          <h2 className="text-4xl md:text-6xl font-bold text-white uppercase tracking-wide leading-none mb-6" style={{ fontFamily: '"Cormorant Garamond", serif' }}>
-            Establish<br/>Node
-          </h2>
-          
-          <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-8 font-light max-w-sm">
-            Architecting autonomous systems and secure, ephemeral environments requires a physical anchor. Pin your global position to initialize the handshake and revoke external access.
+          {/* Close button */}
+          <button 
+            onClick={() => setActiveLocation(null)}
+            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+          >
+            ✕
+          </button>
+
+          <span className="text-[#e5b869] text-[10px] uppercase tracking-[0.3em] font-semibold mb-2">Connection Established</span>
+          <h3 className="text-3xl font-bold text-white mb-4" style={{ fontFamily: '"Cormorant Garamond", serif' }}>
+            Greetings to {activeLocation}
+          </h3>
+          <p className="text-gray-300 text-sm leading-relaxed mb-8 font-light">
+            Thank you for exploring this universe. The singularity awaits your input. Whether you're interested in autonomous systems, secure architecture, or just want to connect, I am glad our paths crossed here.
           </p>
           
-          <div className="bg-black/50 border border-white/5 rounded p-4 font-mono text-xs md:text-sm mb-8">
-            <div className="flex justify-between border-b border-white/5 pb-2 mb-2">
-              <span className="text-gray-500">LATITUDE</span>
-              <span className={pin ? "text-white" : "text-gray-600"}>{pin ? latText : "---"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">LONGITUDE</span>
-              <span className={pin ? "text-white" : "text-gray-600"}>{pin ? lngText : "---"}</span>
-            </div>
-            
-            {!pin && (
-              <div className="mt-4 pt-4 border-t border-[#00f0ff]/20 text-center text-[#00f0ff] animate-pulse tracking-widest text-[10px]">
-                AWAITING COORDINATES...
-              </div>
-            )}
-          </div>
-          
-          <button 
-            disabled={!pin}
-            className={`w-full py-4 rounded text-xs tracking-[0.2em] uppercase transition-all duration-300 ${
-              pin 
-                ? 'bg-[#00f0ff] text-black shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:shadow-[0_0_30px_rgba(0,240,255,0.6)] cursor-pointer' 
-                : 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed'
-            }`}
+          <a 
+            href="#contact"
+            onClick={() => setActiveLocation(null)}
+            className="inline-block px-8 py-3 rounded-full text-xs font-semibold uppercase tracking-widest text-[#e5b869] border border-[#e5b869]/30 hover:bg-[#e5b869] hover:text-black transition-all duration-300"
           >
-            {pin ? "Initialize Handshake" : "Lock Coordinates"}
-          </button>
+            Send Transmission
+          </a>
         </div>
       </div>
-
     </section>
   );
 }
