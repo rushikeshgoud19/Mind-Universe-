@@ -1,0 +1,125 @@
+## VIDEO ANALYSIS REPORT
+
+**Total Duration:** 69 seconds
+**Total Scenes Detected:** 9 (5 Ambient, 4 Transitions)
+**Recommended Scroll Distance:** 15180px
+
+---
+
+### SCENE BREAKDOWN TABLE
+
+| # | Scene Name | Start | End | Duration | Type | Loopable | Loop Start | Loop End | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Turquoise Marble Planet | 0.0 | 8.0 | 8.0s | AMBIENT | YES | 0.0 | 8.0 | Planet slowly rotating, crystals floating |
+| 2 | Right-Pan to Blue Portal | 8.0 | 15.0 | 7.0s | TRANSITION | NO | — | — | Camera pans right, pushes into clockwork portal |
+| 3 | Obsidian Ice Planet | 15.0 | 23.0 | 8.0s | AMBIENT | YES | 15.0 | 23.0 | Ice planet rotating, geometric shards floating |
+| 4 | Right-Pan to Gold Portal | 23.0 | 31.0 | 8.0s | TRANSITION | NO | — | — | Camera pans right, pushes into gold/bronze portal |
+| 5 | Sovereign Desert Planet | 31.0 | 38.0 | 7.0s | AMBIENT | YES | 31.0 | 38.0 | Desert planet rotating, god rays and solar flares |
+| 6 | Right-Pan to Carbon Portal | 38.0 | 46.0 | 8.0s | TRANSITION | NO | — | — | Camera pans right, pushes into molten iron portal |
+| 7 | Lava Crucible Planet | 46.0 | 54.0 | 8.0s | AMBIENT | YES | 46.0 | 54.0 | Volcanic planet rotating, glowing magma fissures |
+| 8 | Right-Pan to Final Portal | 54.0 | 61.0 | 7.0s | TRANSITION | NO | — | — | Camera pans right, pushes into black hole clockwork |
+| 9 | Singularity Event Climax | 61.0 | 69.0 | 8.0s | AMBIENT | YES | 61.0 | 69.0 | Accretion disk spinning, floating roman numerals |
+
+---
+
+### SEGMENTS CONFIG (paste directly into code)
+
+```ts
+const SEGMENTS = [
+  {
+    id: 'scene-1-genesis',
+    label: 'The Genesis Artifact',
+    transitionStart: 8.0,
+    transitionEnd:   15.0,
+    loopStart:       0.0,
+    loopEnd:         8.0,
+    scrollResume:    15.0,
+    loopable:        true,
+    notes:           'Starts with the ambient loop of the turquoise planet. Scroll triggers the pan into the blue clockwork portal.',
+  },
+  {
+    id: 'scene-2-obsidian',
+    label: 'The Obsidian Glacier',
+    transitionStart: 23.0,
+    transitionEnd:   31.0,
+    loopStart:       15.0,
+    loopEnd:         23.0,
+    scrollResume:    31.0,
+    loopable:        true,
+    notes:           'Ambient loop of the ice planet. Scroll triggers the pan into the gold/bronze horology portal.',
+  },
+  {
+    id: 'scene-3-sovereign',
+    label: 'The Sovereign Desert',
+    transitionStart: 38.0,
+    transitionEnd:   46.0,
+    loopStart:       31.0,
+    loopEnd:         38.0,
+    scrollResume:    46.0,
+    loopable:        true,
+    notes:           'Ambient loop of the gold sand planet. Scroll triggers the pan into the molten carbon portal.',
+  },
+  {
+    id: 'scene-4-lava',
+    label: 'The Lava Crucible',
+    transitionStart: 54.0,
+    transitionEnd:   61.0,
+    loopStart:       46.0,
+    loopEnd:         54.0,
+    scrollResume:    61.0,
+    loopable:        true,
+    notes:           'Ambient loop of the volcanic planet. Scroll triggers the final pan into the climax black hole portal.',
+  },
+  {
+    id: 'scene-5-singularity',
+    label: 'The Singularity Event',
+    transitionStart: 69.0,
+    transitionEnd:   69.0,
+    loopStart:       61.0,
+    loopEnd:         69.0,
+    scrollResume:    69.0,
+    loopable:        true,
+    notes:           'Final ambient loop of the black hole singularity. End of experience; no exit transition.',
+  }
+];
+
+const TOTAL_VIDEO_DURATION = 69; // seconds
+const HERO_SCROLL_PX = TOTAL_VIDEO_DURATION * 220; // px
+
+```
+
+---
+
+### CUT POINTS LIST
+
+* **15.0s** → Pushing through the blue clockwork portal cuts to the Obsidian Ice Planet.
+* **31.0s** → Pushing through the gold horology portal cuts to the Sovereign Desert Planet.
+* **46.0s** → Pushing through the fiery carbon portal cuts to the Lava Crucible Planet.
+* **61.0s** → Pushing through the climax black hole clockwork cuts to the final Singularity Event.
+
+---
+
+### LOOP QUALITY ASSESSMENT
+
+| Scene | Loop Window | Quality | Reason |
+| --- | --- | --- | --- |
+| Turquoise Marble Planet | 0.0–8.0 | POOR | Planet rotation and floating crystals will jump if hard-looped from 8.0s back to 0.0s. |
+| Obsidian Ice Planet | 15.0–23.0 | POOR | Planet rotation and floating geometric ice shards will jump if hard-looped. |
+| Sovereign Desert Planet | 31.0–38.0 | POOR | Constant rotation and swirling dust motes will cause a visible pop on a hard loop. |
+| Lava Crucible Planet | 46.0–54.0 | POOR | Shifting magma textures and rising ash particles will stutter on a standard loop. |
+| Singularity Event Climax | 61.0–69.0 | POOR | Fast-moving accretion disk and orbiting debris will not seamlessly align on a hard cut loop. |
+
+---
+
+### RECOMMENDATIONS
+
+1. **PING-PONG LOOPING NEEDED:** Because all ambient scenes are rated POOR for standard hard-looping (due to continuous one-directional rotation and particle physics), the developer MUST implement a "Ping-Pong" loop playback strategy during the idle states (e.g., play from 0.0s to 8.0s, then play in reverse from 8.0s back to 0.0s). This will create a seamless, breathing "zero-gravity" effect without any visual cuts.
+2. **SPEED ADJUSTMENT:** The transition pans (the 7-8 second windows moving into the portals) are beautifully paced, but tie the scroll-jacking strictly to `currentTime` mapping so the user controls the velocity of the push-in.
+
+---
+
+### DEVELOPER NOTES
+
+* Remind the developer: re-encode the final video with `ffmpeg -g 1` flag for smooth scrubbing.
+* Remind the developer: SCRUB mode keeps `video.pause()` active, only `currentTime` changes based on scroll velocity.
+* Remind the developer: LOOP mode calls `video.play()` between `loopStart` and `loopEnd` only. For this specific video, highly recommend implementing ping-pong playback (forward then reverse) during the Loop mode to mask the particle and rotation offsets.
