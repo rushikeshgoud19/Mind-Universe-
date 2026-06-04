@@ -273,25 +273,23 @@ export default function Hero() {
           const lenis = (window as any).lenis;
           
           if (lenis) {
-            console.log("Using Lenis API for scrolling");
-            // Lenis API for perfectly smooth scrolling without GSAP conflicts
-            lenis.scrollTo(scrollOffset, { 
-              duration: 2.5, 
-              easing: (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t 
-            });
-          } else {
-            console.log("Lenis not found, falling back to GSAP");
-            const { gsap } = await import("gsap");
-            const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
-            gsap.registerPlugin(ScrollToPlugin);
-            
-            // Fallback
-            gsap.to(window, {
-              scrollTo: scrollOffset,
-              duration: 2.5,
-              ease: "power2.inOut"
-            });
+            console.log("Stopping Lenis Auto-hijack to allow GSAP Auto-Pilot");
+            lenis.stop();
           }
+          
+          const { gsap } = await import("gsap");
+          const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
+          gsap.registerPlugin(ScrollToPlugin);
+          
+          gsap.to(window, {
+            scrollTo: scrollOffset,
+            duration: 2.5,
+            ease: "power2.inOut",
+            onComplete: () => {
+              console.log("Auto-Pilot complete. Restarting Lenis.");
+              if (lenis) lenis.start();
+            }
+          });
         } else {
           console.log("No next portal found.");
         }
@@ -434,18 +432,16 @@ export default function Hero() {
                     const scrollOffset = (time / 69) * TOTAL_SCROLL_PX;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const lenis = (window as any).lenis;
-                    if (lenis) {
-                      lenis.scrollTo(scrollOffset, { 
-                        duration: 3.5, 
-                        easing: (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t)
-                      });
-                    } else {
-                      gsap.to(window, {
-                        scrollTo: scrollOffset,
-                        duration: 3.5,
-                        ease: "expo.inOut"
-                      });
-                    }
+                    if (lenis) lenis.stop();
+
+                    gsap.to(window, {
+                      scrollTo: scrollOffset,
+                      duration: 3.5,
+                      ease: "expo.inOut",
+                      onComplete: () => {
+                        if (lenis) lenis.start();
+                      }
+                    });
                   }
                 }}
                 style={{ 
