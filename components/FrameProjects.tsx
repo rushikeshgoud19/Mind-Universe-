@@ -4,10 +4,10 @@ import { SEGMENTS } from "@/sections/Hero";
 
 interface FrameProjectsProps {
   frame: Frame;
-  videoRef?: React.RefObject<HTMLVideoElement | null>;
+  progressRef?: React.MutableRefObject<number>;
 }
 
-export default function FrameProjects({ frame, videoRef }: FrameProjectsProps) {
+export default function FrameProjects({ frame, progressRef }: FrameProjectsProps) {
   const titleRef = useRef<HTMLDivElement>(null);
   const p1Ref = useRef<HTMLDivElement>(null);
   const p2Ref = useRef<HTMLDivElement>(null);
@@ -15,11 +15,9 @@ export default function FrameProjects({ frame, videoRef }: FrameProjectsProps) {
 
   // Time-synced animation engine
   useEffect(() => {
-    const segment = SEGMENTS.find(s => s.frameId === frame.id);
-    if (!frame.projects || frame.projects.length === 0 || !videoRef?.current || !segment) return;
+    if (!frame.projects || frame.projects.length === 0 || !progressRef) return;
     
     let rafId: number;
-    const vid = videoRef.current;
     
     const tEl = titleRef.current;
     const p1El = p1Ref.current;
@@ -35,14 +33,9 @@ export default function FrameProjects({ frame, videoRef }: FrameProjectsProps) {
     };
 
     const loop = () => {
-      const time = vid.currentTime;
-      const { loopStart, loopEnd } = segment;
-      const duration = loopEnd - loopStart;
-      
-      if (duration > 0) {
-        const p = Math.max(0, Math.min(1, (time - loopStart) / duration));
+      const p = progressRef.current;
         
-        if (tEl) {
+      if (tEl) {
           const op = mapProgress(p, 0.0, 0.15);
           tEl.style.opacity = op.toString();
           tEl.style.transform = `translateY(${(1 - op) * 30}px) scale(${0.95 + (op * 0.05)})`;
@@ -62,14 +55,12 @@ export default function FrameProjects({ frame, videoRef }: FrameProjectsProps) {
           p3El.style.opacity = op.toString();
           p3El.style.transform = `translateY(${(1 - op) * 30}px) scale(${0.95 + (op * 0.05)})`;
         }
-      }
 
       rafId = requestAnimationFrame(loop);
     };
-    
     rafId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafId);
-  }, [frame.id, frame.projects, videoRef]);
+  }, [frame.id, frame.projects, progressRef]);
 
   // If it's the entry or outro frame
   if (!frame.projects || frame.projects.length === 0) {

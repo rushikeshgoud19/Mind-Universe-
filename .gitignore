@@ -41,3 +41,4 @@ yarn-error.log*
 next-env.d.ts
 *.mp4
 !public/video/experience-web.mp4
+!public/video/*-loop.mp4

@@ -1,57 +1,66 @@
-import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
-export default function LoadingScreen({ isReady }: { isReady: boolean }) {
-  const [show, setShow] = useState(true);
+interface LoadingScreenProps {
+  isReady: boolean;
+}
 
-  useEffect(() => {
-    if (isReady) {
-      const timer = setTimeout(() => setShow(false), 1200); // 1.2s delay to ensure everything settles and feels premium
-      return () => clearTimeout(timer);
-    }
-  }, [isReady]);
-
+export default function LoadingScreen({ isReady }: LoadingScreenProps) {
   return (
     <AnimatePresence>
-      {show && (
+      {!isReady && (
         <motion.div
           key="loading-screen"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
           style={{
-            position: "fixed", inset: 0, zIndex: 9999,
-            backgroundColor: "#050509",
-            display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center",
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "#050509",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 40,
           }}
         >
-          <div style={{ position: "relative", width: 80, height: 80, marginBottom: "2.5rem" }}>
-            <svg viewBox="0 0 40 40" style={{ width: "100%", height: "100%", animation: "spinLoader 4s linear infinite" }}>
-              <circle cx="20" cy="20" r="18.5" stroke="#F2D28B" strokeWidth="0.5" strokeOpacity="0.2" fill="none" />
-              <circle cx="20" cy="20" r="18.5" stroke="#F2D28B" strokeWidth="1.5" strokeDasharray="30 100" fill="none" strokeLinecap="round" />
-            </svg>
+          {/* Spinning orbit ring */}
+          <div style={{ position: "relative", width: 80, height: 80 }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              style={{
+                position: "absolute", inset: 0,
+                border: "1px solid rgba(242,210,139,0.15)",
+                borderTop: "1px solid #F2D28B",
+                borderRadius: "50%",
+              }}
+            />
             <div style={{
-              position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-              fontFamily: '"Cormorant Garamond", serif', fontSize: "20px", color: "#F2D28B",
-              textShadow: "0 0 10px rgba(242,210,139,0.5)"
+              position: "absolute", inset: "50%", transform: "translate(-50%, -50%)",
+              fontFamily: '"Cormorant Garamond", serif',
+              fontSize: 18, fontWeight: 300, color: "#F6F3F0",
+              letterSpacing: "0.1em",
             }}>
               RU
             </div>
           </div>
-          
-          <span style={{
-            fontFamily: '"Inter", sans-serif', fontSize: "0.6rem", letterSpacing: "0.4em",
-            textTransform: "uppercase", color: "#F2D28B", fontWeight: 500,
-            animation: "pulseText 2s ease-in-out infinite"
-          }}>
-            Establishing Connection
-          </span>
 
-          <style>{`
-            @keyframes spinLoader { 100% { transform: rotate(360deg); } }
-            @keyframes pulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-          `}</style>
+          <motion.span
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              fontFamily: '"Inter", sans-serif',
+              fontSize: 11,
+              letterSpacing: "0.25em",
+              textTransform: "uppercase",
+              color: "rgba(246,243,240,0.5)",
+              fontWeight: 300,
+            }}
+          >
+            Establishing Connection...
+          </motion.span>
         </motion.div>
       )}
     </AnimatePresence>

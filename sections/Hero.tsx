@@ -3,17 +3,15 @@ import { AnimatePresence, motion } from "motion/react";
 import FrameProjects from "@/components/FrameProjects";
 import { frames, Frame } from "@/config/frames";
 
-const VIDEO_SOURCE = "/video/experience-web.mp4";
-
+const WARP_VIDEO_SOURCE = "/video/experience-web.mp4";
 
 export interface SegmentDef {
   id: string;
   frameId: string;
   transitionStart: number;
-  transitionEnd: number;
   loopStart: number;
-  loopEnd: number;
-  scrollResume: number;
+  loopDuration: number;
+  loopSrc: string;
 }
 
 export const SEGMENTS: SegmentDef[] = [
@@ -21,55 +19,49 @@ export const SEGMENTS: SegmentDef[] = [
     id: "scene-1-genesis",
     frameId: "scene-1-genesis",
     transitionStart: 8.0,
-    transitionEnd: 15.0,
     loopStart: 0.0,
-    loopEnd: 7.0,
-    scrollResume: 15.0,
+    loopDuration: 7.0,
+    loopSrc: "/video/genesis-loop.mp4",
   },
   {
     id: "scene-2-obsidian",
     frameId: "scene-2-obsidian",
     transitionStart: 23.0,
-    transitionEnd: 31.0,
     loopStart: 16.0,
-    loopEnd: 22.0,
-    scrollResume: 31.0,
+    loopDuration: 6.0,
+    loopSrc: "/video/obsidian-loop.mp4",
   },
   {
     id: "scene-3-sovereign",
     frameId: "scene-3-sovereign",
     transitionStart: 38.0,
-    transitionEnd: 46.0,
     loopStart: 32.0,
-    loopEnd: 37.0,
-    scrollResume: 46.0,
+    loopDuration: 5.0,
+    loopSrc: "/video/sovereign-loop.mp4",
   },
   {
     id: "scene-4-lava",
     frameId: "scene-4-lava",
     transitionStart: 54.0,
-    transitionEnd: 61.0,
     loopStart: 47.0,
-    loopEnd: 53.0,
-    scrollResume: 61.0,
+    loopDuration: 6.0,
+    loopSrc: "/video/lava-loop.mp4",
   },
   {
     id: "scene-5-singularity",
     frameId: "scene-5-singularity",
     transitionStart: 68.5,
-    transitionEnd: 68.5,
     loopStart: 62.0,
-    loopEnd: 67.0,
-    scrollResume: 68.5,
+    loopDuration: 5.0,
+    loopSrc: "/video/singularity-loop.mp4",
   },
   {
     id: "outro",
     frameId: "loop-complete",
     transitionStart: 68.5,
-    transitionEnd: 68.5,
     loopStart: 62.0,
-    loopEnd: 67.0,
-    scrollResume: 68.5,
+    loopDuration: 5.0,
+    loopSrc: "/video/singularity-loop.mp4",
   }
 ];
 
@@ -81,18 +73,24 @@ interface HeroProps {
 
 export default function Hero({ onReady }: HeroProps) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const vidRef = useRef<HTMLVideoElement>(null);
+  const loopVidRef = useRef<HTMLVideoElement>(null);
+  const warpVidRef = useRef<HTMLVideoElement>(null);
 
   const modeRef = useRef<Mode>("INTRO");
   const planetIndexRef = useRef(0);
   const rAFRef = useRef<number | null>(null);
   const scrollLockedRef = useRef(true);
   const wheelCooldownRef = useRef(false);
+  
+  // Decoupled progress tracking for the UI components
+  const progressRef = useRef(0);
 
   const [currentFrame, setCurrentFrame] = useState<Frame>(frames[0]);
   const [mode, setMode] = useState<Mode>("INTRO");
+  const [loopOpacity, setLoopOpacity] = useState(1);
+  const [warpOpacity, setWarpOpacity] = useState(0);
+  const [currentLoopSrc, setCurrentLoopSrc] = useState(SEGMENTS[0].loopSrc);
 
-  // Helper to stop tracking loops/transitions
   const stopTracking = useCallback(() => {
     if (rAFRef.current !== null) {
       cancelAnimationFrame(rAFRef.current);
@@ -100,52 +98,68 @@ export default function Hero({ onReady }: HeroProps) {
     }
   }, []);
 
-  // Start the planet loop animation
-  const startLoop = useCallback((segIndex: number) => {
-    const vid = vidRef.current;
-    if (!vid) return;
+  // Update progress for FrameProjects
+  useEffect(() => {
+    let rafId: number;
+    const trackProgress = () => {
+      if (modeRef.current === "LOOP" && loopVidRef.current) {
+        const seg = SEGMENTS[planetIndexRef.current];
+        const time = loopVidRef.current.currentTime;
+        const dur = seg.loopDuration;
+        // Loop video is 2x duration (forward + reverse). We map it back to 0->1->0
+        if (dur > 0) {
+          progressRef.current = time <= dur ? time / dur : (dur * 2 - time) / dur;
+        }
+      } else if (modeRef.current === "INTRO" && loopVidRef.current) {
+        const seg = SEGMENTS[0];
+        const time = loopVidRef.current.currentTime;
+        if (seg.loopDuration > 0) {
+           progressRef.current = Math.min(1, time / seg.loopDuration);
+        }
+      } else {
+        progressRef.current = 0;
+      }
+      rafId = requestAnimationFrame(trackProgress);
+    };
+    rafId = requestAnimationFrame(trackProgress);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+
+  const startLoop = useCallback((segIndex: number, isFromIntro = false) => {
+    const loopVid = loopVidRef.current;
+    const warpVid = warpVidRef.current;
+    if (!loopVid || !warpVid) return;
 
     const seg = SEGMENTS[segIndex];
     modeRef.current = "LOOP";
     setMode("LOOP");
     planetIndexRef.current = segIndex;
 
-    // Update the displayed frame/project cards
     const newFrame = frames.find(f => f.id === seg.frameId);
     if (newFrame) setCurrentFrame(newFrame);
 
     stopTracking();
-
-    // Ensure video is within the loop window and playing naturally
-    if (vid.currentTime < seg.loopStart || vid.currentTime >= seg.loopEnd) {
-      vid.currentTime = seg.loopStart;
-    }
     
-    vid.playbackRate = 1.0;
-    vid.play().catch(() => {});
+    // We instantly switch to the loop video
+    setWarpOpacity(0);
+    setLoopOpacity(1);
+    warpVid.pause();
 
-    // Monitor playback and snap back to loopStart when reaching loopEnd
-    const trackLoop = () => {
-      if (!vidRef.current || modeRef.current !== "LOOP") return;
+    if (!isFromIntro) {
+      loopVid.currentTime = 0;
+      loopVid.play().catch(() => {});
+    }
 
-      if (vidRef.current.currentTime >= seg.loopEnd) {
-        vidRef.current.currentTime = seg.loopStart;
-      }
-      rAFRef.current = requestAnimationFrame(trackLoop);
-    };
-
-    rAFRef.current = requestAnimationFrame(trackLoop);
   }, [stopTracking]);
 
-  // Transition to the next planet
   const transitionToNext = useCallback(() => {
-    const vid = vidRef.current;
-    if (!vid) return;
+    const loopVid = loopVidRef.current;
+    const warpVid = warpVidRef.current;
+    if (!loopVid || !warpVid) return;
 
     const currentIdx = planetIndexRef.current;
     
-    // If at the last planet (singularity/black hole), mark complete and unlock scroll
-    if (currentIdx >= SEGMENTS.length - 2) {
+    if (currentIdx >= SEGMENTS.length - 1) {
       modeRef.current = "COMPLETE";
       setMode("COMPLETE");
       scrollLockedRef.current = false;
@@ -155,127 +169,151 @@ export default function Hero({ onReady }: HeroProps) {
     const currentSeg = SEGMENTS[currentIdx];
     const nextSeg = SEGMENTS[currentIdx + 1];
 
+    // If the next segment uses the same loop video (e.g. Singularity to Outro),
+    // skip the cinematic warp crossfade and just seamlessly swap the text UI.
+    if (currentSeg.loopSrc === nextSeg.loopSrc) {
+      startLoop(currentIdx + 1);
+      return;
+    }
+
     modeRef.current = "TRANSITIONING";
     setMode("TRANSITIONING");
 
     stopTracking();
 
-    // Snap to the transition start point and let it play natively
-    vid.currentTime = currentSeg.transitionStart;
-    vid.playbackRate = 1.0;
-    vid.play().catch(() => {});
+    // Cinematic crossfade: fade out loop video first
+    setLoopOpacity(0);
+    
+    setTimeout(() => {
+      // Now that loop video is hidden, it is safe to preload the next loop src
+      setCurrentLoopSrc(nextSeg.loopSrc);
 
-    // Monitor playback until it hits the next planet's loopStart
-    const trackTransition = () => {
-      if (!vidRef.current || modeRef.current !== "TRANSITIONING") return;
+      const warpVid = warpVidRef.current;
+      if (!warpVid) return;
 
-      if (vidRef.current.currentTime >= nextSeg.loopStart) {
-        startLoop(currentIdx + 1);
-      } else {
+      const onSeeked = () => {
+        setWarpOpacity(1);
+        warpVid.play().catch(() => {});
+        warpVid.removeEventListener("seeked", onSeeked);
+
+        const trackTransition = () => {
+          if (!warpVidRef.current || modeRef.current !== "TRANSITIONING") return;
+          // When warp reaches the start of the next loop, instantly switch to loop video
+          if (warpVidRef.current.currentTime >= nextSeg.loopStart) {
+            startLoop(currentIdx + 1);
+          } else {
+            rAFRef.current = requestAnimationFrame(trackTransition);
+          }
+        };
+
         rAFRef.current = requestAnimationFrame(trackTransition);
-      }
-    };
+      };
 
-    rAFRef.current = requestAnimationFrame(trackTransition);
+      warpVid.addEventListener("seeked", onSeeked);
+      warpVid.currentTime = currentSeg.transitionStart;
+      
+    }, 400);
+
   }, [startLoop, stopTracking]);
 
-  // Go to a specific planet directly (for dot navigation)
   const goToPlanet = useCallback((targetIdx: number) => {
-    const vid = vidRef.current;
-    if (!vid) return;
-    if (modeRef.current === "TRANSITIONING") return; // Don't interrupt transitions
+    const warpVid = warpVidRef.current;
+    if (!warpVid) return;
+    if (modeRef.current === "TRANSITIONING") return;
 
     stopTracking();
+    
+    modeRef.current = "TRANSITIONING";
+    setMode("TRANSITIONING");
 
-    const targetSeg = SEGMENTS[targetIdx];
-    vid.currentTime = targetSeg.loopStart;
-    startLoop(targetIdx);
+    setLoopOpacity(0);
+    setWarpOpacity(0);
+
+    setTimeout(() => {
+      setCurrentLoopSrc(SEGMENTS[targetIdx].loopSrc);
+      setTimeout(() => {
+        startLoop(targetIdx);
+      }, 100); // small buffer for src swap
+    }, 400);
+
   }, [startLoop, stopTracking]);
 
   useEffect(() => {
     let cleanup: (() => void) | null = null;
 
     const init = () => {
-      const vid = vidRef.current;
-      if (!vid) return;
+      const loopVid = loopVidRef.current;
+      if (!loopVid) return;
 
-      // Wait for video to be ready
       const onCanPlay = () => {
-        // Start the intro: play natively from 0 to the first planet
-        const seg = SEGMENTS[0];
-        vid.currentTime = 0;
-        vid.playbackRate = 1.0;
-        vid.play().catch(() => {});
-
+        loopVid.currentTime = 0;
+        loopVid.play().catch(() => {});
+        
         modeRef.current = "INTRO";
         setMode("INTRO");
         setCurrentFrame(frames[0]);
-        
-        // Signal that the video is ready to the loading screen
+
         if (onReady) onReady();
 
         const trackIntro = () => {
-          if (!vidRef.current || modeRef.current !== "INTRO") return;
-
-          if (vidRef.current.currentTime >= seg.loopStart + 2) {
-            startLoop(0);
+          if (!loopVidRef.current || modeRef.current !== "INTRO") return;
+          // When intro hits the end of the first forward loop, switch state to LOOP
+          if (loopVidRef.current.currentTime >= SEGMENTS[0].loopDuration) {
+             startLoop(0, true);
           } else {
-            rAFRef.current = requestAnimationFrame(trackIntro);
+             rAFRef.current = requestAnimationFrame(trackIntro);
           }
         };
 
         rAFRef.current = requestAnimationFrame(trackIntro);
       };
 
-      if (vid.readyState >= 3) {
+      if (loopVid.readyState >= 3) {
         onCanPlay();
       } else {
-        vid.addEventListener("canplay", onCanPlay, { once: true });
+        loopVid.addEventListener("canplay", onCanPlay, { once: true });
       }
 
       cleanup = () => {
-        vid.removeEventListener("canplay", onCanPlay);
+        loopVid.removeEventListener("canplay", onCanPlay);
         stopTracking();
       };
     };
 
     init();
 
-    // Wheel event listener — triggers transitions
-    const handleWheel = (e: WheelEvent) => {
-      // Only intercept scroll when the Hero is in view and scroll is locked
-      if (!scrollLockedRef.current) return;
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [startLoop, stopTracking, onReady]);
 
+  // Wheel event listener
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (!scrollLockedRef.current) return;
       const stage = stageRef.current;
       if (!stage) return;
 
       const rect = stage.getBoundingClientRect();
-      // Only capture wheel events when the hero stage is visible
       if (rect.bottom < 0 || rect.top > window.innerHeight) return;
 
       e.preventDefault();
 
-      // Only trigger on scroll DOWN and only in LOOP mode
       if (e.deltaY > 0 && modeRef.current === "LOOP") {
-        // Cooldown to prevent rapid-fire
         if (wheelCooldownRef.current) return;
         wheelCooldownRef.current = true;
         setTimeout(() => { wheelCooldownRef.current = false; }, 1000);
-
         transitionToNext();
       }
     };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
-
     return () => {
-      cleanup?.();
       window.removeEventListener("wheel", handleWheel);
     };
-  }, [startLoop, transitionToNext]);
+  }, [transitionToNext]);
 
   const isAtTop = currentFrame.id === "entry";
-  const showPanels = !isAtTop && currentFrame.id !== "loop-complete";
   const isIntro = mode === "INTRO";
 
   return (
@@ -287,28 +325,41 @@ export default function Hero({ onReady }: HeroProps) {
         ref={stageRef} 
         style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}
       >
-        {/* Video */}
-        <video 
-          ref={vidRef} 
-          muted 
-          playsInline 
-          preload="auto" 
-          crossOrigin="anonymous"
-          style={{ 
-            position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 2,
-            willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
-          }}
-        >
-          <source src={VIDEO_SOURCE} type="video/mp4" />
-        </video>
+        <div style={{ position: "absolute", inset: 0, zIndex: 0, backgroundColor: "#050509" }}>
+          
+          {/* Warp Transition Video Layer */}
+          <video 
+            ref={warpVidRef} 
+            src={WARP_VIDEO_SOURCE}
+            muted 
+            playsInline 
+            preload="auto" 
+            style={{ 
+              position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+              opacity: warpOpacity,
+              transition: "opacity 0.4s ease-in-out",
+              willChange: "transform, opacity", transform: "translateZ(0)",
+            }}
+          />
 
-        {/* Cinematic Vignette */}
-        <div style={{ 
-          position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none",
-          background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(5,5,9,0.55) 100%)" 
-        }} />
+          {/* Seamless Baked Loop Video Layer */}
+          <video 
+            ref={loopVidRef} 
+            src={currentLoopSrc}
+            muted 
+            playsInline 
+            preload="auto" 
+            loop
+            style={{ 
+              position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+              opacity: loopOpacity,
+              transition: "opacity 0.4s ease-in-out",
+              willChange: "transform, opacity", transform: "translateZ(0)",
+            }}
+          />
+        </div>
 
-        {/* Scroll Indicator — visible during LOOP mode */}
+        {/* Scroll Indicator */}
         <AnimatePresence>
           {(isAtTop || isIntro) && (
             <motion.div 
@@ -338,7 +389,7 @@ export default function Hero({ onReady }: HeroProps) {
           )}
         </AnimatePresence>
 
-        {/* Transition indicator — visible during LOOP mode (not intro) */}
+        {/* Transition hint */}
         <AnimatePresence>
           {mode === "LOOP" && !isAtTop && (
             <motion.div
@@ -365,15 +416,20 @@ export default function Hero({ onReady }: HeroProps) {
           )}
         </AnimatePresence>
 
-        {/* Active Project Card Panels */}
-        {showPanels && (
-          <div style={{ 
-            position: "absolute", inset: 0, zIndex: 4, 
+        {/* Active Project Card Panels (always rendered, FrameProjects handles empty logic) */}
+        <motion.div 
+          animate={{ 
+            opacity: mode === "TRANSITIONING" ? 0 : 1,
+            filter: mode === "TRANSITIONING" ? "blur(8px)" : "blur(0px)" 
+          }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          style={{ 
+            position: "absolute", inset: 0, zIndex: 10, 
             pointerEvents: "none" 
-          }}>
-            <FrameProjects frame={currentFrame} videoRef={vidRef} />
-          </div>
-        )}
+          }}
+        >
+          <FrameProjects frame={currentFrame} progressRef={progressRef} />
+        </motion.div>
 
         {/* Progress Navigation Dots */}
         {!isAtTop && (
