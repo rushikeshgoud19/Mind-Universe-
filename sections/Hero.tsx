@@ -229,7 +229,41 @@ export default function Hero() {
     };
 
     init();
-    return () => cleanup?.();
+
+    // Global spacebar listener to jump to the next world
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        e.preventDefault(); // Prevent default page jump
+        
+        const { gsap } = await import("gsap");
+        const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
+        gsap.registerPlugin(ScrollToPlugin);
+        
+        // These are the exact snap points for the scenes
+        const targetTimes = [4, 19, 34.5, 50, 65]; 
+        const currentProgress = lastProgressRef.current;
+        const currentTime = currentProgress * TOTAL_VIDEO_DURATION;
+        
+        // Find the next time that is significantly greater than the current time
+        const nextTime = targetTimes.find(t => t > currentTime + 2);
+        
+        if (nextTime) {
+          const scrollOffset = (nextTime / 69) * TOTAL_SCROLL_PX;
+          gsap.to(window, {
+            scrollTo: scrollOffset,
+            duration: 3.5,
+            ease: "expo.inOut"
+          });
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      cleanup?.();
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [currentFrame.id]);
 
   const isAtTop = currentFrame.id === "entry";
@@ -284,12 +318,20 @@ export default function Hero() {
                 width: 1, height: 44, background: "linear-gradient(to bottom, transparent, #F2D28B)",
                 animation: "scrollLine 2s ease-in-out infinite" 
               }} />
-              <span style={{ 
-                fontFamily: '"Inter", sans-serif', fontSize: 9, letterSpacing: "0.32em",
-                color: "rgba(242,210,139,0.65)", textTransform: "uppercase" 
-              }}>
-                Scroll
-              </span>
+              <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ 
+                  fontFamily: '"Inter", sans-serif', fontSize: 9, letterSpacing: "0.32em",
+                  color: "rgba(242,210,139,0.65)", textTransform: "uppercase" 
+                }}>
+                  Scroll to explore the journey
+                </span>
+                <span style={{ 
+                  fontFamily: '"Inter", sans-serif', fontSize: 8, letterSpacing: "0.2em",
+                  color: "rgba(242,210,139,0.4)", textTransform: "uppercase" 
+                }}>
+                  Press Spacebar to jump to next world
+                </span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
