@@ -22,6 +22,7 @@ export default function App({ Component, pageProps }: AppProps) {
         touchMultiplier: 1.2,
         autoRaf: false,
       });
+      (window as any).lenis = lenis;
       
       lenis.on("scroll", ScrollTrigger.update);
       

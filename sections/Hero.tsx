@@ -270,11 +270,22 @@ export default function Hero() {
         
         if (nextPortalTime) {
           const scrollOffset = (nextPortalTime / 69) * TOTAL_SCROLL_PX;
-          gsap.to(window, {
-            scrollTo: scrollOffset,
-            duration: 2.5,
-            ease: "power2.inOut"
-          });
+          const lenis = (window as any).lenis;
+          
+          if (lenis) {
+            // Lenis API for perfectly smooth scrolling without GSAP conflicts
+            lenis.scrollTo(scrollOffset, { 
+              duration: 2.5, 
+              easing: (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t 
+            });
+          } else {
+            // Fallback
+            gsap.to(window, {
+              scrollTo: scrollOffset,
+              duration: 2.5,
+              ease: "power2.inOut"
+            });
+          }
         }
       }
     };
@@ -414,11 +425,19 @@ export default function Hero() {
                     const time = targetTimes[idx];
                     const scrollOffset = (time / 69) * TOTAL_SCROLL_PX;
                     
-                    gsap.to(window, {
-                      scrollTo: scrollOffset,
-                      duration: 4.5,
-                      ease: "expo.inOut"
-                    });
+                    const lenis = (window as any).lenis;
+                    if (lenis) {
+                      lenis.scrollTo(scrollOffset, { 
+                        duration: 3.5, 
+                        easing: (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t)
+                      });
+                    } else {
+                      gsap.to(window, {
+                        scrollTo: scrollOffset,
+                        duration: 3.5,
+                        ease: "expo.inOut"
+                      });
+                    }
                   }
                 }}
                 style={{ 
