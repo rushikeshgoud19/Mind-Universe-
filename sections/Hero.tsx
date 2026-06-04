@@ -342,7 +342,7 @@ export default function Hero() {
             position: "absolute", inset: 0, zIndex: 4, 
             pointerEvents: "none" 
           }}>
-            <FrameProjects frame={currentFrame} videoRef={vidRef} segment={segmentRef.current} />
+            <FrameProjects frame={currentFrame} videoRef={vidRef} />
           </div>
         )}
 
