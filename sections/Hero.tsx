@@ -256,13 +256,11 @@ export default function Hero() {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.code === "Space") {
         e.preventDefault();
-        
-        const { gsap } = await import("gsap");
-        const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
-        gsap.registerPlugin(ScrollToPlugin);
+        console.log("Spacebar pressed! Attempting Auto-Pilot...");
         
         const currentProgress = lastProgressRef.current;
         const currentTime = currentProgress * TOTAL_VIDEO_DURATION;
+        console.log(`Current Time: ${currentTime}`);
         
         // Exact timestamps of the Portals (transitions)
         const portalTimes = [8, 23, 38, 54, 68.5];
@@ -270,16 +268,23 @@ export default function Hero() {
         
         if (nextPortalTime) {
           const scrollOffset = (nextPortalTime / 69) * TOTAL_SCROLL_PX;
+          console.log(`Next portal at ${nextPortalTime}s. Scrolling to offset ${scrollOffset}px`);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const lenis = (window as any).lenis;
           
           if (lenis) {
+            console.log("Using Lenis API for scrolling");
             // Lenis API for perfectly smooth scrolling without GSAP conflicts
             lenis.scrollTo(scrollOffset, { 
               duration: 2.5, 
               easing: (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t 
             });
           } else {
+            console.log("Lenis not found, falling back to GSAP");
+            const { gsap } = await import("gsap");
+            const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
+            gsap.registerPlugin(ScrollToPlugin);
+            
             // Fallback
             gsap.to(window, {
               scrollTo: scrollOffset,
@@ -287,6 +292,8 @@ export default function Hero() {
               ease: "power2.inOut"
             });
           }
+        } else {
+          console.log("No next portal found.");
         }
       }
     };
