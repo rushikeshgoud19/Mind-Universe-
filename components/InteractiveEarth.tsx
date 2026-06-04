@@ -32,11 +32,11 @@ function latLongToVector3(lat: number, lng: number, radius: number): THREE.Vecto
 }
 
 function EarthModel({ radius = 2, setActiveLocation }: { radius?: number, setActiveLocation: (loc: string | null) => void }) {
-  // Load high-resolution earth textures directly
+  // Load high-resolution earth textures locally for extreme performance
   const [colorMap, normalMap, specularMap] = useTexture([
-    "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
-    "https://unpkg.com/three-globe/example/img/earth-topology.png",
-    "https://unpkg.com/three-globe/example/img/earth-water.png"
+    "/textures/earth-blue-marble.jpg",
+    "/textures/earth-topology.png",
+    "/textures/earth-water.png"
   ]);
 
   const earthRef = useRef<THREE.Group>(null);
