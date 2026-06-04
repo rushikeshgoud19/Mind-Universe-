@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import FrameProjects from "@/components/FrameProjects";
 import { frames, Frame } from "@/config/frames";
-
-const VIDEO_SOURCE = "/video/experience.mp4";
-
+const VIDEO_SOURCE = "/video/experience-web.mp4";
 // Video metadata & timing definitions
 const TOTAL_VIDEO_DURATION = 69;
 const PX_PER_SECOND = 220;
