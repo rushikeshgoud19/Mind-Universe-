@@ -228,39 +228,8 @@ export default function Hero() {
 
     init();
 
-    // Global spacebar listener to jump to the next world
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        e.preventDefault(); // Prevent default page jump
-        
-        const { gsap } = await import("gsap");
-        const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
-        gsap.registerPlugin(ScrollToPlugin);
-        
-        // These are the exact snap points for the scenes
-        const targetTimes = [4, 19, 34.5, 50, 65]; 
-        const currentProgress = lastProgressRef.current;
-        const currentTime = currentProgress * TOTAL_VIDEO_DURATION;
-        
-        // Find the next time that is significantly greater than the current time
-        const nextTime = targetTimes.find(t => t > currentTime + 2);
-        
-        if (nextTime) {
-          const scrollOffset = (nextTime / 69) * TOTAL_SCROLL_PX;
-          gsap.to(window, {
-            scrollTo: scrollOffset,
-            duration: 3.5,
-            ease: "expo.inOut"
-          });
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
     return () => {
       cleanup?.();
-      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [currentFrame.id]);
 
