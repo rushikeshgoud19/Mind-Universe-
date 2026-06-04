@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import FrameProjects from "@/components/FrameProjects";
 import { frames, Frame } from "@/config/frames";
-const VIDEO_SOURCE = "/video/experience.mp4";
+const VIDEO_SOURCE = "/video/experience-web.mp4";
 // Video metadata & timing definitions
 const TOTAL_VIDEO_DURATION = 69;
 const PX_PER_SECOND = 220;
@@ -90,6 +90,64 @@ export default function Hero() {
 
   const [, setMode] = useState<"SCRUB" | "LOOP">("LOOP");
   const [currentFrame, setCurrentFrame] = useState<Frame>(frames[0]);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [loadProgress, setLoadProgress] = useState(0);
+
+  // Preload video as a Blob with Progress Bar
+  useEffect(() => {
+    const loadVideo = async () => {
+      try {
+        const response = await fetch(VIDEO_SOURCE);
+        if (!response.body) throw new Error("ReadableStream not supported");
+        
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        
+        if (total === 0) {
+          // Fallback if no content-length
+          const blob = await response.blob();
+          if (vidRef.current) {
+            vidRef.current.src = URL.createObjectURL(blob);
+            vidRef.current.load();
+            setVideoLoaded(true);
+          }
+          return;
+        }
+
+        const reader = response.body.getReader();
+        let receivedLength = 0;
+        const chunks = [];
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          receivedLength += value.length;
+          setLoadProgress((receivedLength / total) * 100);
+        }
+
+        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+        
+        if (vidRef.current) {
+          vidRef.current.src = url;
+          vidRef.current.load();
+          // Short delay to ensure fade-in is smooth
+          setTimeout(() => setVideoLoaded(true), 500);
+        }
+      } catch (err) {
+        console.error("Video preload failed", err);
+        // Fallback to normal streaming on error
+        if (vidRef.current) {
+          vidRef.current.src = VIDEO_SOURCE;
+          vidRef.current.load();
+          setVideoLoaded(true);
+        }
+      }
+    };
+    
+    loadVideo();
+  }, []);
 
   const getSegmentFromTime = (time: number) => {
     for (let i = 0; i < SEGMENTS.length; i++) {
@@ -121,7 +179,7 @@ export default function Hero() {
         pinSpacing: true,
         anticipatePin: 1,
         snap: {
-          snapTo: [0, 4/69, 19/69, 34.5/69, 50/69, 65/69, 1],
+          snapTo: [0, 4/69, 8/69, 19/69, 23/69, 34.5/69, 38/69, 50/69, 54/69, 65/69, 68.5/69, 1],
           duration: { min: 0.3, max: 0.8 },
           delay: 0.1,
           ease: "power1.inOut"
@@ -246,6 +304,67 @@ export default function Hero() {
         ref={stageRef} 
         style={{ position: "sticky", top: 0, width: "100%", height: "100vh", overflow: "hidden" }}
       >
+        {/* Cinematic Preloader UI */}
+        <AnimatePresence>
+          {!videoLoaded && (
+            <motion.div 
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.5, ease: "easeInOut" }}
+              style={{ 
+                position: "absolute", inset: 0, zIndex: 10, display: "flex", flexDirection: "column", 
+                alignItems: "center", justifyContent: "center", background: "#050509" 
+              }}
+            >
+              <div style={{ position: "relative", width: 120, height: 120, marginBottom: 40 }}>
+                {/* Glowing Core */}
+                <div style={{ 
+                  position: "absolute", inset: 0, borderRadius: "50%",
+                  background: "radial-gradient(circle, rgba(242,210,139,0.3) 0%, transparent 70%)",
+                  animation: "pulse 2s infinite ease-in-out" 
+                }} />
+                
+                {/* SVG Progress Ring */}
+                <svg viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)", width: "100%", height: "100%" }}>
+                  <circle 
+                    cx="50" cy="50" r="45" 
+                    fill="none" stroke="rgba(242,210,139,0.1)" strokeWidth="2" 
+                  />
+                  <circle 
+                    cx="50" cy="50" r="45" 
+                    fill="none" stroke="#F2D28B" strokeWidth="2"
+                    strokeDasharray="283" 
+                    strokeDashoffset={283 - (283 * loadProgress) / 100}
+                    style={{ transition: "stroke-dashoffset 0.1s linear" }}
+                  />
+                </svg>
+                
+                {/* Percentage Text inside ring */}
+                <div style={{
+                  position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                  fontFamily: '"Cormorant Garamond", serif', color: "#F2D28B", fontSize: 24, fontWeight: "bold"
+                }}>
+                  {Math.round(loadProgress)}%
+                </div>
+              </div>
+              
+              <h2 style={{ 
+                fontFamily: '"Inter", sans-serif', fontSize: 14, letterSpacing: "0.4em", 
+                textTransform: "uppercase", color: "#F2D28B", textShadow: "0 0 20px rgba(242,210,139,0.5)",
+                marginBottom: 10
+              }}>
+                Establishing Connection
+              </h2>
+              <p style={{ 
+                fontFamily: '"Inter", sans-serif', fontSize: 10, letterSpacing: "0.2em", 
+                color: "rgba(242,210,139,0.5)", textTransform: "uppercase" 
+              }}>
+                Downloading Universal Core
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Consolidated High-Performance Video Element */}
         <video 
           ref={vidRef} 
@@ -256,11 +375,9 @@ export default function Hero() {
           style={{ 
             position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 2,
             willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
-            opacity: 1
+            opacity: videoLoaded ? 1 : 0, transition: "opacity 2s ease"
           }}
-        >
-          <source src={VIDEO_SOURCE} type="video/mp4" />
-        </video>
+        />
 
         {/* Cinematic Vignette */}
         <div style={{ 
