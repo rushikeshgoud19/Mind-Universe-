@@ -49,7 +49,7 @@ function EarthModel({ radius = 2, setActiveLocation }: { radius?: number, setAct
   });
 
   return (
-    <group ref={earthRef} position={[0, -0.8, 0]}>
+    <group ref={earthRef} position={[0, -1.0, 0]}>
       <Bounds fit clip observe margin={1.2}>
         <Center>
           {/* The Textured Earth Sphere */}
@@ -103,7 +103,7 @@ export default function InteractiveEarth() {
     <section id="interactive-earth" className="relative w-full h-screen bg-[#050509] overflow-hidden flex flex-col items-center justify-center">
       
       {/* Overlay UI: Elegant Header */}
-      <div className="absolute top-16 left-0 w-full text-center z-10 pointer-events-none flex flex-col items-center">
+      <div className="absolute top-36 left-0 w-full text-center z-10 pointer-events-none flex flex-col items-center">
         <h2 
           className="text-4xl md:text-5xl text-white drop-shadow-2xl" 
           style={{ 
