@@ -74,16 +74,6 @@ body {
   100% { transform: scaleY(0); transform-origin: bottom; }
 }
 
-/* Lenis */
-html.lenis, html.lenis body {
-  height: auto;
-}
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
 html {
   scroll-behavior: auto !important;
 }

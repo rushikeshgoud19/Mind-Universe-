@@ -116,7 +116,7 @@ export default function Hero() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).gsap = gsap;
       
-      // Disable GSAP's lag smoothing to ensure rock-solid timing with Lenis
+      // Disable GSAP's lag smoothing for rock-solid video timing
       gsap.ticker.lagSmoothing(0);
 
       ScrollTrigger.create({
@@ -180,7 +180,7 @@ export default function Hero() {
             
             targetTimeRef.current = nextTime;
             
-            // Instantly lock onto the time without manual lerping since Lenis handles smooth scroll
+            // Instantly lock onto the time
             gsap.to(vid, { currentTime: nextTime, duration: 0, overwrite: "auto", ease: "none" });
             
             if (seg.id !== segmentRef.current.id) {
@@ -258,49 +258,78 @@ export default function Hero() {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.code === "Space") {
         e.preventDefault();
-        console.log("Spacebar pressed! Attempting Auto-Pilot...");
         
-        const currentProgress = lastProgressRef.current;
-        const currentTime = currentProgress * TOTAL_VIDEO_DURATION;
-        console.log(`Current Time: ${currentTime}`);
+        // Prevent double-pressing while an auto-pilot is already in progress
+        if (isResettingRef.current) return;
         
-        // Exact timestamps of the Portals (transitions) - excluding the final black hole scene
-        const portalTimes = [8, 23, 38, 54];
-        // Tighten threshold so we don't accidentally skip to the next portal if we're near the end of the loop
-        const nextPortalTime = portalTimes.find(t => t > currentTime + 0.5);
+        const vid = vidRef.current;
+        if (!vid || vid.readyState < 2) return;
         
-        if (nextPortalTime) {
-          const scrollOffset = (nextPortalTime / 69) * TOTAL_SCROLL_PX;
-          console.log(`Next portal at ${nextPortalTime}s. Teleporting to offset ${scrollOffset}px`);
-          
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const lenis = (window as any).lenis;
-          
-          if (lenis) {
-            lenis.scrollTo(scrollOffset, { immediate: true });
-          } else {
-            window.scrollTo({ top: scrollOffset, behavior: "auto" });
-          }
-          
-          // Atomic State Update: Force the video and timeline to sync instantly
-          if (vidRef.current) {
-            vidRef.current.currentTime = nextPortalTime;
-            targetTimeRef.current = nextPortalTime;
-            
-            // Trigger the cinematic portal prompt
-            if (!isAtPortalRef.current) {
-              isAtPortalRef.current = true;
-              setIsAtPortal(true);
-              setShowPortalPrompt(true);
-              if (portalTimeoutRef.current) clearTimeout(portalTimeoutRef.current);
-              portalTimeoutRef.current = setTimeout(() => {
-                setShowPortalPrompt(false);
-              }, 2500); // 2.5s for a slightly longer read
-            }
-          }
-        } else {
-          console.log("No next portal found.");
+        const currentTime = lastProgressRef.current * TOTAL_VIDEO_DURATION;
+        console.log(`Spacebar pressed! Current Time: ${currentTime}`);
+        
+        // Find which segment the user is currently in
+        const currentSegIdx = SEGMENTS.findIndex(s => currentTime <= s.scrollResume);
+        if (currentSegIdx < 0 || currentSegIdx >= SEGMENTS.length - 2) {
+          // Already at the last planet (singularity) or outro — do nothing
+          console.log("Already at the final scene.");
+          return;
         }
+        
+        const currentSeg = SEGMENTS[currentSegIdx];
+        const nextSeg = SEGMENTS[currentSegIdx + 1];
+        
+        // The cinematic flow:
+        // 1. Rewind video to current planet's loopStart
+        // 2. Play video forward through the portal transition
+        // 3. Land at the next planet's loopStart
+        const startTime = currentSeg.loopStart;
+        const endTime = nextSeg.loopStart;
+        const journeyDuration = 3.5; // seconds of real time for the whole cinematic
+        
+        console.log(`Auto-Pilot: ${currentSeg.id} (${startTime}s) → ${nextSeg.id} (${endTime}s)`);
+        
+        // Lock out scroll-driven scrubbing
+        isResettingRef.current = true;
+        if (loopTweenRef.current) loopTweenRef.current.kill();
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const gsap = (window as any).gsap;
+        if (!gsap) return;
+        
+        // Use a proxy object to smoothly tween video time AND scroll position
+        const proxy = { time: startTime };
+        vid.currentTime = startTime; // Instant rewind to planet's starting position
+        
+        gsap.to(proxy, {
+          time: endTime,
+          duration: journeyDuration,
+          ease: "power2.inOut",
+          onUpdate: () => {
+            if (vidRef.current && vidRef.current.readyState >= 2) {
+              vidRef.current.currentTime = proxy.time;
+            }
+            // Keep scroll position in sync so ScrollTrigger doesn't fight us
+            const scrollY = (proxy.time / TOTAL_VIDEO_DURATION) * TOTAL_SCROLL_PX;
+            window.scrollTo(0, scrollY);
+          },
+          onComplete: () => {
+            console.log("Auto-Pilot journey complete.");
+            isResettingRef.current = false;
+            
+            // Update segment and frame state to the new planet
+            segmentRef.current = nextSeg;
+            const newFrame = frames.find(f => f.id === nextSeg.frameId);
+            if (newFrame) setCurrentFrame(newFrame);
+            targetTimeRef.current = endTime;
+            lastProgressRef.current = endTime / TOTAL_VIDEO_DURATION;
+            
+            // Show the "Scroll to enter" prompt briefly
+            isAtPortalRef.current = false;
+            setIsAtPortal(false);
+            setShowPortalPrompt(false);
+          }
+        });
       }
     };
 
@@ -429,23 +458,12 @@ export default function Hero() {
           }}>
             {SEGMENTS.filter(s => s.id !== "outro").map((seg, idx) => (
               <div key={seg.id} title={seg.id}
-                onClick={async () => {
-                  const { gsap } = await import("gsap");
-                  const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
-                  gsap.registerPlugin(ScrollToPlugin);
-                  
+                onClick={() => {
                   const targetTimes = [4, 19, 34.5, 50, 65]; 
                   if (idx >= 0 && idx < targetTimes.length) {
                     const time = targetTimes[idx];
                     const scrollOffset = (time / 69) * TOTAL_SCROLL_PX;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const lenis = (window as any).lenis;
-                    
-                    if (lenis) {
-                      lenis.scrollTo(scrollOffset, { immediate: true });
-                    } else {
-                      window.scrollTo({ top: scrollOffset, behavior: "auto" });
-                    }
+                    window.scrollTo({ top: scrollOffset, behavior: "auto" });
                   }
                 }}
                 style={{ 
