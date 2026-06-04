@@ -100,7 +100,8 @@ export default function InteractiveEarth() {
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
 
   return (
-    <section id="interactive-earth" className="relative w-full h-screen bg-[#050509] overflow-hidden flex flex-col items-center justify-center">
+    <section id="interactive-earth" className="relative w-full h-[150vh] bg-[#050509]">
+      <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col items-center justify-center">
       
       {/* Overlay UI: Elegant Header */}
       <div className="absolute top-36 left-0 w-full text-center z-10 pointer-events-none flex flex-col items-center">
@@ -186,6 +187,7 @@ export default function InteractiveEarth() {
             Send Transmission
           </a>
         </div>
+      </div>
       </div>
     </section>
   );
