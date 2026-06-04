@@ -280,21 +280,15 @@ export default function Hero() {
           }
           
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const gsap = (window as any).gsap;
-          if (!gsap) {
-            console.error("GSAP not found on window!");
-            return;
-          }
+          const lenis = (window as any).lenis;
           
-          gsap.to(window, {
-            scrollTo: { y: scrollOffset, autoKill: false },
-            duration: 2.5,
-            ease: "power2.inOut",
-            onComplete: () => {
-              console.log("Auto-Pilot complete. Restarting Lenis.");
-              if (lenis) lenis.start();
-            }
-          });
+          if (lenis) {
+            console.log("Using pure Lenis scrollTo API");
+            lenis.scrollTo(scrollOffset, { duration: 2.5, force: true, lock: true });
+          } else {
+            console.log("Lenis not found, using native smooth scroll");
+            window.scrollTo({ top: scrollOffset, behavior: 'smooth' });
+          }
         } else {
           console.log("No next portal found.");
         }
@@ -437,20 +431,11 @@ export default function Hero() {
                     const scrollOffset = (time / 69) * TOTAL_SCROLL_PX;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const lenis = (window as any).lenis;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const gsap = (window as any).gsap;
                     
-                    if (lenis) lenis.stop();
-
-                    if (gsap) {
-                      gsap.to(window, {
-                        scrollTo: { y: scrollOffset, autoKill: false },
-                        duration: 3.5,
-                        ease: "expo.inOut",
-                        onComplete: () => {
-                          if (lenis) lenis.start();
-                        }
-                      });
+                    if (lenis) {
+                      lenis.scrollTo(scrollOffset, { duration: 3.5, force: true, lock: true });
+                    } else {
+                      window.scrollTo({ top: scrollOffset, behavior: 'smooth' });
                     }
                   }
                 }}
