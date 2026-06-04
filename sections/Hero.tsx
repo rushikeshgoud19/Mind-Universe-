@@ -275,14 +275,6 @@ export default function Hero() {
           const lenis = (window as any).lenis;
           
           if (lenis) {
-            console.log("Stopping Lenis Auto-hijack to allow GSAP Auto-Pilot");
-            lenis.stop();
-          }
-          
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const lenis = (window as any).lenis;
-          
-          if (lenis) {
             console.log("Using pure Lenis scrollTo API");
             lenis.scrollTo(scrollOffset, { duration: 2.5, force: true, lock: true });
           } else {
