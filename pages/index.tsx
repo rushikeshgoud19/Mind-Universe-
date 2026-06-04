@@ -6,6 +6,7 @@ const Hero = dynamic(() => import("@/sections/Hero"), { ssr: false });
 const Catalog = dynamic(() => import("@/sections/Catalog"), { ssr: false });
 const Story = dynamic(() => import("@/sections/Story"), { ssr: false });
 const InteractiveEarth = dynamic(() => import("@/components/InteractiveEarth"), { ssr: false });
+const ContactCTA = dynamic(() => import("@/sections/ContactCTA"), { ssr: false });
 const Footer = dynamic(() => import("@/sections/Footer"), { ssr: false });
 
 export default function Home() {
@@ -22,6 +23,7 @@ export default function Home() {
         <Catalog />
         <Story />
         <InteractiveEarth />
+        <ContactCTA />
         <Footer />
       </main>
     </>

@@ -66,19 +66,25 @@ export default function Footer() {
           </div>
           <div>
             <h3 style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.75rem", color: "#F6F3F0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "1.5rem" }}>
-              Navigate
+              Connect
             </h3>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {["Collection", "Story", "Contact"].map(item => (
-                <li key={item}>
-                  <a href="#" className="body-copy" style={{ textDecoration: "none", transition: "color 0.3s ease" }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = "#F2D28B"}
-                    onMouseLeave={(e) => e.currentTarget.style.color = "#9E9EAE"}
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <a href="https://github.com/rushikeshgoud19" target="_blank" rel="noopener noreferrer" className="body-copy" style={{ textDecoration: "none", transition: "color 0.3s ease" }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = "#F2D28B"}
+                  onMouseLeave={(e) => e.currentTarget.style.color = "#9E9EAE"}
+                >
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a href="mailto:rushikeshgoud19@gmail.com" className="body-copy" style={{ textDecoration: "none", transition: "color 0.3s ease" }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = "#F2D28B"}
+                  onMouseLeave={(e) => e.currentTarget.style.color = "#9E9EAE"}
+                >
+                  Email
+                </a>
+              </li>
             </ul>
           </div>
           <div>
