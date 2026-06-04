@@ -176,7 +176,7 @@ export default function InteractiveEarth() {
             Greetings to {activeLocation}
           </h3>
           <p className="text-gray-300 text-sm leading-relaxed mb-8 font-light">
-            Thank you for exploring this universe. The singularity awaits your input. Whether you're interested in autonomous systems, secure architecture, or just want to connect, I am glad our paths crossed here.
+            Thank you for exploring this universe. The singularity awaits your input. Whether you&apos;re interested in autonomous systems, secure architecture, or just want to connect, I am glad our paths crossed here.
           </p>
           
           <a 

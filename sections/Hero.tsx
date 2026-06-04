@@ -270,6 +270,7 @@ export default function Hero() {
         
         if (nextPortalTime) {
           const scrollOffset = (nextPortalTime / 69) * TOTAL_SCROLL_PX;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const lenis = (window as any).lenis;
           
           if (lenis) {
@@ -424,7 +425,7 @@ export default function Hero() {
                   if (idx >= 0 && idx < targetTimes.length) {
                     const time = targetTimes[idx];
                     const scrollOffset = (time / 69) * TOTAL_SCROLL_PX;
-                    
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const lenis = (window as any).lenis;
                     if (lenis) {
                       lenis.scrollTo(scrollOffset, { 
