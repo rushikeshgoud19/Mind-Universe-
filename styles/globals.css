@@ -82,7 +82,7 @@ html.lenis, html.lenis body {
   scroll-behavior: auto !important;
 }
 .lenis.lenis-stopped {
-  /* overflow: hidden; Removed so GSAP can still scroll while Lenis is stopped */
+  overflow: hidden;
 }
 html {
   scroll-behavior: auto !important;

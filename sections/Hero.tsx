@@ -264,22 +264,39 @@ export default function Hero() {
         const currentTime = currentProgress * TOTAL_VIDEO_DURATION;
         console.log(`Current Time: ${currentTime}`);
         
-        // Exact timestamps of the Portals (transitions)
-        const portalTimes = [8, 23, 38, 54, 68.5];
-        const nextPortalTime = portalTimes.find(t => t > currentTime + 2);
+        // Exact timestamps of the Portals (transitions) - excluding the final black hole scene
+        const portalTimes = [8, 23, 38, 54];
+        // Tighten threshold so we don't accidentally skip to the next portal if we're near the end of the loop
+        const nextPortalTime = portalTimes.find(t => t > currentTime + 0.5);
         
         if (nextPortalTime) {
           const scrollOffset = (nextPortalTime / 69) * TOTAL_SCROLL_PX;
-          console.log(`Next portal at ${nextPortalTime}s. Scrolling to offset ${scrollOffset}px`);
+          console.log(`Next portal at ${nextPortalTime}s. Teleporting to offset ${scrollOffset}px`);
+          
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const lenis = (window as any).lenis;
           
           if (lenis) {
-            console.log("Instantly teleporting via Lenis");
             lenis.scrollTo(scrollOffset, { immediate: true });
           } else {
-            console.log("Instantly teleporting via native scroll");
             window.scrollTo({ top: scrollOffset, behavior: "auto" });
+          }
+          
+          // Atomic State Update: Force the video and timeline to sync instantly
+          if (vidRef.current) {
+            vidRef.current.currentTime = nextPortalTime;
+            targetTimeRef.current = nextPortalTime;
+            
+            // Trigger the cinematic portal prompt
+            if (!isAtPortalRef.current) {
+              isAtPortalRef.current = true;
+              setIsAtPortal(true);
+              setShowPortalPrompt(true);
+              if (portalTimeoutRef.current) clearTimeout(portalTimeoutRef.current);
+              portalTimeoutRef.current = setTimeout(() => {
+                setShowPortalPrompt(false);
+              }, 2500); // 2.5s for a slightly longer read
+            }
           }
         } else {
           console.log("No next portal found.");
@@ -348,10 +365,10 @@ export default function Hero() {
                 padding: "16px 40px", borderRadius: 100, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 boxShadow: "0 20px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(242,210,139,0.05)"
               }}>
-                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 10, letterSpacing: "0.4em", textTransform: "uppercase", color: "#F2D28B", fontWeight: 600 }}>
+                <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 15, letterSpacing: "0.2em", textTransform: "uppercase", color: "#F2D28B", fontWeight: 500 }}>
                   Scroll to enter
                 </span>
-                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(242,210,139,0.5)" }}>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(242,210,139,0.7)", fontWeight: 300 }}>
                   Initiate manual override
                 </span>
               </div>
