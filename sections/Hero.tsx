@@ -1,12 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import FrameProjects from "@/components/FrameProjects";
 import { frames, Frame } from "@/config/frames";
+
 const VIDEO_SOURCE = "/video/experience-web.mp4";
-// Video metadata & timing definitions
-const TOTAL_VIDEO_DURATION = 69;
-const PX_PER_SECOND = 220;
-const TOTAL_SCROLL_PX = TOTAL_VIDEO_DURATION * PX_PER_SECOND; // 15180px scroll track
+
 
 export interface SegmentDef {
   id: string;
@@ -75,287 +73,223 @@ export const SEGMENTS: SegmentDef[] = [
   }
 ];
 
+type Mode = "INTRO" | "LOOP" | "TRANSITIONING" | "COMPLETE";
+
 export default function Hero() {
-  const heroRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const vidRef = useRef<HTMLVideoElement>(null);
-  
-  const modeRef = useRef<"SCRUB" | "LOOP" | "INIT">("INIT");
-  const segmentRef = useRef(SEGMENTS[0]);
-  const lastProgressRef = useRef(0);
-  const lastProgressMsRef = useRef(0);
-  const isResettingRef = useRef(false);
-  const targetTimeRef = useRef(0);
+
+  const modeRef = useRef<Mode>("INTRO");
+  const planetIndexRef = useRef(0);
   const loopTweenRef = useRef<{ kill: () => void } | null>(null);
-  const portalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isAtPortalRef = useRef(false);
+  const transitionTweenRef = useRef<{ kill: () => void } | null>(null);
+  const gsapRef = useRef<typeof import("gsap").gsap | null>(null);
+  const scrollLockedRef = useRef(true);
+  const wheelCooldownRef = useRef(false);
 
-  const [, setMode] = useState<"SCRUB" | "LOOP">("LOOP");
   const [currentFrame, setCurrentFrame] = useState<Frame>(frames[0]);
-  const [isAtPortal, setIsAtPortal] = useState(false);
-  const [showPortalPrompt, setShowPortalPrompt] = useState(false);
+  const [mode, setMode] = useState<Mode>("INTRO");
 
-  const getSegmentFromTime = (time: number) => {
-    for (let i = 0; i < SEGMENTS.length; i++) {
-      if (time <= SEGMENTS[i].scrollResume) {
-        return SEGMENTS[i];
+  // Start the planet loop animation
+  const startLoop = useCallback((segIndex: number) => {
+    const gsap = gsapRef.current;
+    const vid = vidRef.current;
+    if (!gsap || !vid) return;
+
+    const seg = SEGMENTS[segIndex];
+    modeRef.current = "LOOP";
+    setMode("LOOP");
+    planetIndexRef.current = segIndex;
+
+    // Update the displayed frame/project cards
+    const newFrame = frames.find(f => f.id === seg.frameId);
+    if (newFrame) setCurrentFrame(newFrame);
+
+    // Kill any existing loop
+    if (loopTweenRef.current) loopTweenRef.current.kill();
+
+    const fullDuration = seg.loopEnd - seg.loopStart;
+    const durationToEnd = Math.max(0.1, seg.loopEnd - vid.currentTime);
+
+    const proxy = { time: vid.currentTime };
+    loopTweenRef.current = gsap.timeline({
+      onUpdate: () => {
+        if (vidRef.current && vidRef.current.readyState >= 2) {
+          vidRef.current.currentTime = proxy.time;
+        }
       }
+    })
+      .to(proxy, { time: seg.loopEnd, duration: durationToEnd, ease: "none" })
+      .to(proxy, { time: seg.loopStart, duration: fullDuration, ease: "none", repeat: -1, yoyo: true });
+  }, []);
+
+  // Transition to the next planet
+  const transitionToNext = useCallback(() => {
+    const gsap = gsapRef.current;
+    const vid = vidRef.current;
+    if (!gsap || !vid) return;
+
+    const currentIdx = planetIndexRef.current;
+    
+    // If at the last planet (singularity/black hole), mark complete and unlock scroll
+    if (currentIdx >= SEGMENTS.length - 2) {
+      modeRef.current = "COMPLETE";
+      setMode("COMPLETE");
+      scrollLockedRef.current = false;
+      return;
     }
-    return SEGMENTS[SEGMENTS.length - 1];
-  };
+
+    const currentSeg = SEGMENTS[currentIdx];
+    const nextSeg = SEGMENTS[currentIdx + 1];
+
+    modeRef.current = "TRANSITIONING";
+    setMode("TRANSITIONING");
+
+    // Kill the loop
+    if (loopTweenRef.current) loopTweenRef.current.kill();
+
+    // Play the video from the current segment's transition start through to the next segment's loop start
+    const startTime = currentSeg.transitionStart;
+    const endTime = nextSeg.loopStart;
+    const journeySeconds = endTime - startTime; // Real video seconds to cover
+    const playbackSpeed = 1.0; // Play at 1x speed for maximum smoothness
+    const tweenDuration = journeySeconds / playbackSpeed;
+
+    const proxy = { time: startTime };
+    vid.currentTime = startTime;
+
+    transitionTweenRef.current = gsap.to(proxy, {
+      time: endTime,
+      duration: tweenDuration,
+      ease: "none", // Linear = natural video speed
+      onUpdate: () => {
+        if (vidRef.current && vidRef.current.readyState >= 2) {
+          vidRef.current.currentTime = proxy.time;
+        }
+      },
+      onComplete: () => {
+        // Land on the next planet and start looping
+        startLoop(currentIdx + 1);
+      }
+    });
+  }, [startLoop]);
+
+  // Go to a specific planet directly (for dot navigation)
+  const goToPlanet = useCallback((targetIdx: number) => {
+    const gsap = gsapRef.current;
+    const vid = vidRef.current;
+    if (!gsap || !vid) return;
+    if (modeRef.current === "TRANSITIONING") return; // Don't interrupt transitions
+
+    // Kill any active tweens
+    if (loopTweenRef.current) loopTweenRef.current.kill();
+    if (transitionTweenRef.current) transitionTweenRef.current.kill();
+
+    const targetSeg = SEGMENTS[targetIdx];
+    vid.currentTime = targetSeg.loopStart;
+    startLoop(targetIdx);
+  }, [startLoop]);
 
   useEffect(() => {
     let cleanup: (() => void) | null = null;
 
     const init = async () => {
       const { gsap } = await import("gsap");
-      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-      const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
-      
-      gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).gsap = gsap;
-      
-      // Disable GSAP's lag smoothing for rock-solid video timing
+      gsapRef.current = gsap;
       gsap.ticker.lagSmoothing(0);
 
-      ScrollTrigger.create({
-        trigger: heroRef.current,
-        start: "top top",
-        end: `+=${TOTAL_SCROLL_PX}`,
-        pin: stageRef.current,
-        pinSpacing: true,
-        anticipatePin: 1,
-        snap: {
-          snapTo: [0, 4/69, 8/69, 19/69, 23/69, 34.5/69, 38/69, 50/69, 54/69, 65/69, 68.5/69, 1],
-          duration: { min: 0.3, max: 0.8 },
-          delay: 0.1,
-          ease: "power1.inOut"
-        },
-        onUpdate: (self) => {
-          if (isResettingRef.current) return;
-          
-          const p = self.progress;
-          const vid = vidRef.current;
-          if (!vid || vid.readyState < 2) return;
-          
-          if (p < 0.004) {
-            // At the top: force idle/start loop
-            if (modeRef.current !== "LOOP" || segmentRef.current.id !== SEGMENTS[0].id) {
-              modeRef.current = "LOOP";
-              setMode("LOOP");
-              segmentRef.current = SEGMENTS[0];
-              setCurrentFrame(frames[0]);
-              targetTimeRef.current = 0;
-              if (loopTweenRef.current) loopTweenRef.current.kill();
-              
-              const seg = SEGMENTS[0];
-              const fullDuration = seg.loopEnd - seg.loopStart;
-              
-              const proxy = { time: vid.currentTime };
-              loopTweenRef.current = gsap.timeline({
-                onUpdate: () => {
-                  if (vidRef.current && vidRef.current.readyState >= 2) {
-                    vidRef.current.currentTime = proxy.time;
-                  }
-                }
-              })
-                .to(proxy, { time: seg.loopEnd, duration: fullDuration, ease: "none" })
-                .to(proxy, { time: seg.loopStart, duration: fullDuration, ease: "none", repeat: -1, yoyo: true });
-            }
-          } else {
-            // Scroll tracking active
-            if (Math.abs(p - lastProgressRef.current) > 0.0008) {
-              lastProgressMsRef.current = Date.now();
-            }
+      const vid = vidRef.current;
+      if (!vid) return;
 
-            if (modeRef.current !== "SCRUB") {
-              modeRef.current = "SCRUB";
-              setMode("SCRUB");
-              if (loopTweenRef.current) loopTweenRef.current.kill();
-            }
+      // Wait for video to be ready
+      const onCanPlay = () => {
+        // Start the intro: play video from 0 to the first planet's loop zone
+        const seg = SEGMENTS[0];
+        const proxy = { time: 0 };
+        vid.currentTime = 0;
 
-            const nextTime = Math.min(p * TOTAL_VIDEO_DURATION, 68.5);
-            const seg = getSegmentFromTime(nextTime);
-            
-            targetTimeRef.current = nextTime;
-            
-            // Instantly lock onto the time
-            gsap.to(vid, { currentTime: nextTime, duration: 0, overwrite: "auto", ease: "none" });
-            
-            if (seg.id !== segmentRef.current.id) {
-              segmentRef.current = seg;
-            }
+        modeRef.current = "INTRO";
+        setMode("INTRO");
+        setCurrentFrame(frames[0]);
 
-            // Cinematic Portal Logic: Detect if we are paused at a portal entrance
-            const portalTimes = [8, 23, 38, 54, 68.5];
-            const isPortalNow = portalTimes.some(t => Math.abs(nextTime - t) < 0.15);
-            
-            if (isPortalNow) {
-              if (!isAtPortalRef.current) {
-                isAtPortalRef.current = true;
-                setIsAtPortal(true);
-                setShowPortalPrompt(true);
-                if (portalTimeoutRef.current) clearTimeout(portalTimeoutRef.current);
-                portalTimeoutRef.current = setTimeout(() => {
-                  setShowPortalPrompt(false);
-                }, 2000);
-              }
-            } else {
-              isAtPortalRef.current = false;
-              setIsAtPortal(false);
-              setShowPortalPrompt(false);
+        gsap.to(proxy, {
+          time: seg.loopStart + 2, // Play a couple seconds into the loop zone
+          duration: (seg.loopStart + 2) / 1.0, // At 1x speed
+          ease: "none",
+          onUpdate: () => {
+            if (vidRef.current && vidRef.current.readyState >= 2) {
+              vidRef.current.currentTime = proxy.time;
             }
-
-            // Display entry frame for the initial scroll, then transition to cards
-            if (nextTime <= 1.0) {
-              setCurrentFrame(frames[0]);
-            } else {
-              const newFrame = frames.find(f => f.id === seg.frameId);
-              if (newFrame && currentFrame.id !== newFrame.id) {
-                setCurrentFrame(newFrame);
-              }
-            }
-
-            // Detect SCRUB -> LOOP transition (user stopped scrolling)
-            if (Date.now() - lastProgressMsRef.current > 400) {
-              if (vid.currentTime >= seg.loopStart && vid.currentTime <= seg.loopEnd) {
-                modeRef.current = "LOOP";
-                setMode("LOOP");
-                if (loopTweenRef.current) loopTweenRef.current.kill();
-                
-                const durationToEnd = Math.max(0.1, seg.loopEnd - vid.currentTime);
-                const fullDuration = seg.loopEnd - seg.loopStart;
-                
-                const proxy = { time: vid.currentTime };
-                loopTweenRef.current = gsap.timeline({
-                  onUpdate: () => {
-                    if (vidRef.current && vidRef.current.readyState >= 2) {
-                      vidRef.current.currentTime = proxy.time;
-                    }
-                  }
-                })
-                  .to(proxy, { time: seg.loopEnd, duration: durationToEnd, ease: "none" })
-                  .to(proxy, { time: seg.loopStart, duration: fullDuration, ease: "none", repeat: -1, yoyo: true });
-              }
-            }
-
-            // Removed the aggressive auto-scroll block to stop fighting the user's scroll
+          },
+          onComplete: () => {
+            // Intro done, start looping on planet 1
+            startLoop(0);
           }
-          
-          lastProgressRef.current = p;
-        }
-      });
+        });
+      };
+
+      if (vid.readyState >= 2) {
+        onCanPlay();
+      } else {
+        vid.addEventListener("canplay", onCanPlay, { once: true });
+      }
 
       cleanup = () => {
-        ScrollTrigger.getAll().forEach(t => t.kill());
+        vid.removeEventListener("canplay", onCanPlay);
+        if (loopTweenRef.current) loopTweenRef.current.kill();
+        if (transitionTweenRef.current) transitionTweenRef.current.kill();
       };
     };
 
     init();
 
-    // Cinematic Auto-Pilot Spacebar Listener
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        
-        // Prevent double-pressing while an auto-pilot is already in progress
-        if (isResettingRef.current) return;
-        
-        const vid = vidRef.current;
-        if (!vid || vid.readyState < 2) return;
-        
-        const currentTime = lastProgressRef.current * TOTAL_VIDEO_DURATION;
-        console.log(`Spacebar pressed! Current Time: ${currentTime}`);
-        
-        // Find which segment the user is currently in
-        const currentSegIdx = SEGMENTS.findIndex(s => currentTime <= s.scrollResume);
-        if (currentSegIdx < 0 || currentSegIdx >= SEGMENTS.length - 2) {
-          // Already at the last planet (singularity) or outro — do nothing
-          console.log("Already at the final scene.");
-          return;
-        }
-        
-        const currentSeg = SEGMENTS[currentSegIdx];
-        const nextSeg = SEGMENTS[currentSegIdx + 1];
-        
-        // The cinematic flow:
-        // 1. Rewind video to current planet's loopStart
-        // 2. Play video forward through the portal transition
-        // 3. Land at the next planet's loopStart
-        const startTime = currentSeg.loopStart;
-        const endTime = nextSeg.loopStart;
-        const journeyDuration = 3.5; // seconds of real time for the whole cinematic
-        
-        console.log(`Auto-Pilot: ${currentSeg.id} (${startTime}s) → ${nextSeg.id} (${endTime}s)`);
-        
-        // Lock out scroll-driven scrubbing
-        isResettingRef.current = true;
-        if (loopTweenRef.current) loopTweenRef.current.kill();
-        
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const gsap = (window as any).gsap;
-        if (!gsap) return;
-        
-        // Use a proxy object to smoothly tween video time AND scroll position
-        const proxy = { time: startTime };
-        vid.currentTime = startTime; // Instant rewind to planet's starting position
-        
-        gsap.to(proxy, {
-          time: endTime,
-          duration: journeyDuration,
-          ease: "power2.inOut",
-          onUpdate: () => {
-            if (vidRef.current && vidRef.current.readyState >= 2) {
-              vidRef.current.currentTime = proxy.time;
-            }
-            // Keep scroll position in sync so ScrollTrigger doesn't fight us
-            const scrollY = (proxy.time / TOTAL_VIDEO_DURATION) * TOTAL_SCROLL_PX;
-            window.scrollTo(0, scrollY);
-          },
-          onComplete: () => {
-            console.log("Auto-Pilot journey complete.");
-            isResettingRef.current = false;
-            
-            // Update segment and frame state to the new planet
-            segmentRef.current = nextSeg;
-            const newFrame = frames.find(f => f.id === nextSeg.frameId);
-            if (newFrame) setCurrentFrame(newFrame);
-            targetTimeRef.current = endTime;
-            lastProgressRef.current = endTime / TOTAL_VIDEO_DURATION;
-            
-            // Show the "Scroll to enter" prompt briefly
-            isAtPortalRef.current = false;
-            setIsAtPortal(false);
-            setShowPortalPrompt(false);
-          }
-        });
+    // Wheel event listener — triggers transitions
+    const handleWheel = (e: WheelEvent) => {
+      // Only intercept scroll when the Hero is in view and scroll is locked
+      if (!scrollLockedRef.current) return;
+
+      const stage = stageRef.current;
+      if (!stage) return;
+
+      const rect = stage.getBoundingClientRect();
+      // Only capture wheel events when the hero stage is visible
+      if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+
+      e.preventDefault();
+
+      // Only trigger on scroll DOWN and only in LOOP mode
+      if (e.deltaY > 0 && modeRef.current === "LOOP") {
+        // Cooldown to prevent rapid-fire
+        if (wheelCooldownRef.current) return;
+        wheelCooldownRef.current = true;
+        setTimeout(() => { wheelCooldownRef.current = false; }, 1000);
+
+        transitionToNext();
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("wheel", handleWheel, { passive: false });
 
     return () => {
       cleanup?.();
-      window.removeEventListener("keydown", handleKeyDown);
-      if (portalTimeoutRef.current) clearTimeout(portalTimeoutRef.current);
+      window.removeEventListener("wheel", handleWheel);
     };
-  }, [currentFrame.id]);
+  }, [startLoop, transitionToNext]);
 
   const isAtTop = currentFrame.id === "entry";
   const showPanels = !isAtTop && currentFrame.id !== "loop-complete";
+  const isIntro = mode === "INTRO";
 
   return (
     <section 
       id="hero" 
-      ref={heroRef} 
-      style={{ position: "relative", background: "#050509", minHeight: `calc(100vh + ${TOTAL_SCROLL_PX}px)` }}
+      style={{ position: "relative", background: "#050509", height: "100vh" }}
     >
       <div 
         ref={stageRef} 
-        style={{ position: "sticky", top: 0, width: "100%", height: "100vh", overflow: "hidden" }}
+        style={{ position: "relative", width: "100%", height: "100vh", overflow: "hidden" }}
       >
-        {/* Consolidated High-Performance Video Element */}
+        {/* Video */}
         <video 
           ref={vidRef} 
           muted 
@@ -365,7 +299,6 @@ export default function Hero() {
           style={{ 
             position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 2,
             willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
-            opacity: 1
           }}
         >
           <source src={VIDEO_SOURCE} type="video/mp4" />
@@ -377,42 +310,15 @@ export default function Hero() {
           background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(5,5,9,0.55) 100%)" 
         }} />
 
-        {/* Cinematic Portal Prompt */}
+        {/* Scroll Indicator — visible during LOOP mode */}
         <AnimatePresence>
-          {isAtPortal && showPortalPrompt && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.8, ease: "easeInOut" }}
-              style={{
-                position: "absolute", inset: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none"
-              }}
-            >
-              <div style={{
-                background: "rgba(5,5,9,0.7)", backdropFilter: "blur(12px)", border: "1px solid rgba(242,210,139,0.2)",
-                padding: "16px 40px", borderRadius: 100, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                boxShadow: "0 20px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(242,210,139,0.05)"
-              }}>
-                <span style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: 15, letterSpacing: "0.2em", textTransform: "uppercase", color: "#F2D28B", fontWeight: 500 }}>
-                  Scroll to enter
-                </span>
-                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(242,210,139,0.7)", fontWeight: 300 }}>
-                  Initiate manual override
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Scroll Indicator */}
-        <AnimatePresence>
-          {isAtTop && (
+          {(isAtTop || isIntro) && (
             <motion.div 
               key="scroll-hint"
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
+              transition={{ duration: 1, delay: 1 }}
               style={{ 
                 position: "absolute", bottom: 36, left: "50%", transform: "translateX(-50%)",
                 zIndex: 5, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, pointerEvents: "none" 
@@ -424,18 +330,39 @@ export default function Hero() {
               }} />
               <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 4 }}>
                 <span style={{ 
-                  fontFamily: '"Inter", sans-serif', fontSize: 9, letterSpacing: "0.32em",
-                  color: "rgba(242,210,139,0.65)", textTransform: "uppercase" 
+                  fontFamily: '"Cormorant Garamond", serif', fontSize: 13, letterSpacing: "0.2em",
+                  color: "rgba(242,210,139,0.75)", textTransform: "uppercase", fontWeight: 400
                 }}>
                   Scroll to explore the journey
                 </span>
-                <span style={{ 
-                  fontFamily: '"Inter", sans-serif', fontSize: 8, letterSpacing: "0.2em",
-                  color: "rgba(242,210,139,0.4)", textTransform: "uppercase" 
-                }}>
-                  Press Spacebar to jump to next world
-                </span>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Transition indicator — visible during LOOP mode (not intro) */}
+        <AnimatePresence>
+          {mode === "LOOP" && !isAtTop && (
+            <motion.div
+              key="next-hint"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              style={{
+                position: "absolute", bottom: 56, left: "50%", transform: "translateX(-50%)",
+                zIndex: 5, pointerEvents: "none",
+              }}
+            >
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                style={{
+                  width: 20, height: 20, borderRight: "1.5px solid rgba(242,210,139,0.5)",
+                  borderBottom: "1.5px solid rgba(242,210,139,0.5)",
+                  transform: "rotate(45deg)", margin: "0 auto",
+                }}
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -458,14 +385,7 @@ export default function Hero() {
           }}>
             {SEGMENTS.filter(s => s.id !== "outro").map((seg, idx) => (
               <div key={seg.id} title={seg.id}
-                onClick={() => {
-                  const targetTimes = [4, 19, 34.5, 50, 65]; 
-                  if (idx >= 0 && idx < targetTimes.length) {
-                    const time = targetTimes[idx];
-                    const scrollOffset = (time / 69) * TOTAL_SCROLL_PX;
-                    window.scrollTo({ top: scrollOffset, behavior: "auto" });
-                  }
-                }}
+                onClick={() => goToPlanet(idx)}
                 style={{ 
                   width: currentFrame.id === seg.frameId ? 24 : 6, height: 6, borderRadius: 3,
                   background: currentFrame.id === seg.frameId ? "#F2D28B" : "rgba(246,243,240,0.22)",

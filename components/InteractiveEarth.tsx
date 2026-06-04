@@ -1,6 +1,6 @@
 import React, { useState, Suspense, useRef, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Html, Bounds, Center, useTexture, Sphere } from "@react-three/drei";
+import { OrbitControls, Html, Center, useTexture, Sphere } from "@react-three/drei";
 import * as THREE from "three";
 
 // Coordinates for some interesting places (latitude, longitude)
@@ -49,8 +49,7 @@ function EarthModel({ radius = 2, setActiveLocation, setHoveredLocation }: { rad
   });
 
   return (
-    <group ref={earthRef} position={[0, -1.0, 0]}>
-      <Bounds fit clip observe margin={1.2}>
+    <group ref={earthRef} position={[0, 0, 0]}>
         <Center>
           {/* The Textured Earth Sphere */}
           <Sphere args={[radius, 64, 64]}>
@@ -123,7 +122,6 @@ function EarthModel({ radius = 2, setActiveLocation, setHoveredLocation }: { rad
             );
           })}
         </Center>
-      </Bounds>
     </group>
   );
 }
@@ -179,9 +177,11 @@ export default function InteractiveEarth() {
           <OrbitControls 
             enableZoom={false} 
             enablePan={false}
-            enableRotate={false}
+            enableRotate={true}
             autoRotate={true} 
-            autoRotateSpeed={0.5} 
+            autoRotateSpeed={0.5}
+            minPolarAngle={Math.PI * 0.2}
+            maxPolarAngle={Math.PI * 0.8}
           />
         </Canvas>
       </div>
