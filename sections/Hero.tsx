@@ -272,33 +272,14 @@ export default function Hero() {
           const scrollOffset = (nextPortalTime / 69) * TOTAL_SCROLL_PX;
           console.log(`Next portal at ${nextPortalTime}s. Scrolling to offset ${scrollOffset}px`);
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const gsap = (window as any).gsap;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const lenis = (window as any).lenis;
           
-          if (gsap) {
-            console.log("Using foolproof GSAP Proxy Auto-Pilot");
-            const proxy = { y: window.scrollY };
-            
-            gsap.to(proxy, {
-              y: scrollOffset,
-              duration: 2.5,
-              ease: "power2.inOut",
-              onUpdate: () => {
-                if (lenis) {
-                  // Force Lenis to instantly jump to the proxy's exact calculated pixel on this frame
-                  lenis.scrollTo(proxy.y, { immediate: true });
-                } else {
-                  window.scrollTo(0, proxy.y);
-                }
-              },
-              onComplete: () => {
-                console.log("Auto-Pilot journey complete.");
-              }
-            });
+          if (lenis) {
+            console.log("Instantly teleporting via Lenis");
+            lenis.scrollTo(scrollOffset, { immediate: true });
           } else {
-            console.log("GSAP not found, falling back to native scroll");
-            window.scrollTo({ top: scrollOffset, behavior: 'smooth' });
+            console.log("Instantly teleporting via native scroll");
+            window.scrollTo({ top: scrollOffset, behavior: "auto" });
           }
         } else {
           console.log("No next portal found.");
@@ -442,27 +423,11 @@ export default function Hero() {
                     const scrollOffset = (time / 69) * TOTAL_SCROLL_PX;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const lenis = (window as any).lenis;
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const gsap = (window as any).gsap;
                     
-                    if (gsap) {
-                      const proxy = { y: window.scrollY };
-                      gsap.to(proxy, {
-                        y: scrollOffset,
-                        duration: 3.5,
-                        ease: "expo.inOut",
-                        onUpdate: () => {
-                          if (lenis) {
-                            lenis.scrollTo(proxy.y, { immediate: true });
-                          } else {
-                            window.scrollTo(0, proxy.y);
-                          }
-                        }
-                      });
-                    } else if (lenis) {
-                      lenis.scrollTo(scrollOffset, { duration: 3.5, force: true, lock: true });
+                    if (lenis) {
+                      lenis.scrollTo(scrollOffset, { immediate: true });
                     } else {
-                      window.scrollTo({ top: scrollOffset, behavior: 'smooth' });
+                      window.scrollTo({ top: scrollOffset, behavior: "auto" });
                     }
                   }
                 }}
