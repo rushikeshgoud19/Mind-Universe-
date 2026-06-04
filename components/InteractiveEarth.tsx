@@ -1,4 +1,4 @@
-import React, { useState, Suspense, useRef } from "react";
+import React, { useState, Suspense, useRef, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html, Bounds, Center, useTexture, Sphere } from "@react-three/drei";
 import * as THREE from "three";
@@ -31,7 +31,7 @@ function latLongToVector3(lat: number, lng: number, radius: number): THREE.Vecto
   return new THREE.Vector3(x, y, z);
 }
 
-function EarthModel({ radius = 2, setActiveLocation }: { radius?: number, setActiveLocation: (loc: string | null) => void }) {
+function EarthModel({ radius = 2, setActiveLocation, setHoveredLocation }: { radius?: number, setActiveLocation: (loc: string | null) => void, setHoveredLocation: (loc: string | null) => void }) {
   // Load high-resolution earth textures locally for extreme performance
   const [colorMap, normalMap, specularMap] = useTexture([
     "/textures/earth-blue-marble.jpg",
@@ -74,19 +74,51 @@ function EarthModel({ radius = 2, setActiveLocation }: { radius?: number, setAct
                   e.stopPropagation();
                   setActiveLocation(loc.name);
                 }}
-                onPointerOver={() => document.body.style.cursor = 'pointer'}
-                onPointerOut={() => document.body.style.cursor = 'auto'}
+                onPointerOver={() => {
+                  document.body.style.cursor = 'pointer';
+                  setHoveredLocation(loc.name);
+                }}
+                onPointerOut={() => {
+                  document.body.style.cursor = 'auto';
+                  setHoveredLocation(null);
+                }}
               >
-                {/* Core dot */}
+                {/* Invisible large hit area for easier clicking */}
                 <mesh>
-                  <sphereGeometry args={[0.03, 16, 16]} />
+                  <sphereGeometry args={[0.15, 16, 16]} />
+                  <meshBasicMaterial transparent opacity={0} />
+                </mesh>
+                {/* Core dot — larger */}
+                <mesh>
+                  <sphereGeometry args={[0.05, 16, 16]} />
                   <meshBasicMaterial color="#e5b869" />
                 </mesh>
-                {/* Glow ring */}
+                {/* Outer glow ring — larger */}
                 <mesh>
-                  <sphereGeometry args={[0.06, 16, 16]} />
-                  <meshBasicMaterial color="#e5b869" transparent opacity={0.4} />
+                  <sphereGeometry args={[0.1, 16, 16]} />
+                  <meshBasicMaterial color="#e5b869" transparent opacity={0.35} />
                 </mesh>
+                {/* City name label — always visible */}
+                <Html
+                  position={[0, 0.18, 0]}
+                  center
+                  style={{
+                    pointerEvents: 'none',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  <span style={{
+                    fontFamily: '"Inter", sans-serif',
+                    fontSize: 9,
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase' as const,
+                    color: 'rgba(229,184,105,0.7)',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.8)',
+                    fontWeight: 500,
+                  }}>
+                    {loc.name}
+                  </span>
+                </Html>
               </group>
             );
           })}
@@ -98,13 +130,15 @@ function EarthModel({ radius = 2, setActiveLocation }: { radius?: number, setAct
 
 export default function InteractiveEarth() {
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
+  const [hoveredLocation, setHoveredLocation] = useState<string | null>(null);
+  const handleSetHovered = useCallback((loc: string | null) => setHoveredLocation(loc), []);
 
   return (
     <section id="interactive-earth" className="relative w-full h-[150vh] bg-[#050509]">
       <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col items-center justify-center">
       
-      {/* Overlay UI: Elegant Header */}
-      <div className="absolute top-24 left-0 w-full text-center z-10 pointer-events-none flex flex-col items-center">
+      {/* Overlay UI: Elegant Header — pushed down so it doesn't overlap the nav */}
+      <div className="absolute top-32 left-0 w-full text-center z-10 pointer-events-none flex flex-col items-center">
         <h2 
           className="text-4xl md:text-5xl text-white drop-shadow-2xl" 
           style={{ 
@@ -134,28 +168,52 @@ export default function InteractiveEarth() {
       <div className="absolute inset-0 w-full h-full">
         <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
           <color attach="background" args={["#050509"]} />
-          {/* Much brighter lighting so the untextured sphere is visible! */}
           <ambientLight intensity={0.8} color="#ffffff" />
           <directionalLight position={[5, 3, 5]} intensity={3.5} color="#ffffff" />
           <directionalLight position={[-5, -3, -5]} intensity={1.0} color="#ffffff" />
           
           <Suspense fallback={<Html center><span className="text-[#e5b869] text-xs tracking-widest">LOADING WORLD...</span></Html>}>
-            <EarthModel setActiveLocation={setActiveLocation} />
+            <EarthModel setActiveLocation={setActiveLocation} setHoveredLocation={handleSetHovered} />
           </Suspense>
 
           <OrbitControls 
             enableZoom={false} 
-            enablePan={false} 
+            enablePan={false}
+            enableRotate={false}
             autoRotate={true} 
             autoRotateSpeed={0.5} 
           />
         </Canvas>
       </div>
 
+      {/* Hovered location indicator */}
+      {hoveredLocation && !activeLocation && (
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+          <div style={{
+            background: "rgba(5,5,9,0.6)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(229,184,105,0.2)",
+            padding: "8px 24px",
+            borderRadius: 100,
+          }}>
+            <span style={{
+              fontFamily: '"Inter", sans-serif',
+              fontSize: 11,
+              letterSpacing: "0.2em",
+              textTransform: "uppercase",
+              color: "#e5b869",
+              fontWeight: 500,
+            }}>
+              {hoveredLocation}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Elegant Golden Glass Popup when a location is clicked */}
-      <div className={`absolute z-20 transition-all duration-700 ease-in-out ${activeLocation ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
+      <div className={`absolute inset-0 z-20 flex items-center justify-center transition-all duration-700 ease-in-out ${activeLocation ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div 
-          className="relative w-[380px] p-8 rounded-2xl flex flex-col items-center text-center shadow-2xl"
+          className={`relative w-[380px] p-8 rounded-2xl flex flex-col items-center text-center shadow-2xl transition-transform duration-700 ${activeLocation ? 'scale-100' : 'scale-95'}`}
           style={{
             background: "rgba(10, 10, 15, 0.7)",
             backdropFilter: "blur(20px)",
