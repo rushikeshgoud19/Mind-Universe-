@@ -113,6 +113,8 @@ export default function Hero() {
       const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
       
       gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).gsap = gsap;
       
       // Disable GSAP's lag smoothing to ensure rock-solid timing with Lenis
       gsap.ticker.lagSmoothing(0);
@@ -277,12 +279,15 @@ export default function Hero() {
             lenis.stop();
           }
           
-          const { gsap } = await import("gsap");
-          const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
-          gsap.registerPlugin(ScrollToPlugin);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const gsap = (window as any).gsap;
+          if (!gsap) {
+            console.error("GSAP not found on window!");
+            return;
+          }
           
           gsap.to(window, {
-            scrollTo: scrollOffset,
+            scrollTo: { y: scrollOffset, autoKill: false },
             duration: 2.5,
             ease: "power2.inOut",
             onComplete: () => {
@@ -432,16 +437,21 @@ export default function Hero() {
                     const scrollOffset = (time / 69) * TOTAL_SCROLL_PX;
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const lenis = (window as any).lenis;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const gsap = (window as any).gsap;
+                    
                     if (lenis) lenis.stop();
 
-                    gsap.to(window, {
-                      scrollTo: scrollOffset,
-                      duration: 3.5,
-                      ease: "expo.inOut",
-                      onComplete: () => {
-                        if (lenis) lenis.start();
-                      }
-                    });
+                    if (gsap) {
+                      gsap.to(window, {
+                        scrollTo: { y: scrollOffset, autoKill: false },
+                        duration: 3.5,
+                        ease: "expo.inOut",
+                        onComplete: () => {
+                          if (lenis) lenis.start();
+                        }
+                      });
+                    }
                   }
                 }}
                 style={{ 
