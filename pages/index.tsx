@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -13,6 +13,23 @@ const Footer = dynamic(() => import("@/sections/Footer"), { ssr: false });
 
 export default function Home() {
   const [videoReady, setVideoReady] = useState(false);
+  const [pageReady, setPageReady] = useState(false);
+
+  useEffect(() => {
+    const handleLoad = () => {
+      // Ensure the browser has extra time to parse dynamic chunks and CSS
+      setTimeout(() => setPageReady(true), 800);
+    };
+
+    if (document.readyState === "complete") {
+      handleLoad();
+    } else {
+      window.addEventListener("load", handleLoad);
+      return () => window.removeEventListener("load", handleLoad);
+    }
+  }, []);
+
+  const isAppReady = videoReady && pageReady;
 
   return (
     <>
@@ -21,7 +38,7 @@ export default function Home() {
         <meta name="description" content="Explore the developer portfolio of Rushikesh: architecting intelligence, absolute security, and resilient systems." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <LoadingScreen isReady={videoReady} />
+      <LoadingScreen isReady={isAppReady} />
       <CustomCursor />
       <main style={{ background: "#050509", cursor: "none" }}>
         <Hero onReady={() => setVideoReady(true)} />

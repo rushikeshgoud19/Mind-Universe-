@@ -50,81 +50,6 @@ export default function ContactCTA() {
     <section id="contact" style={{ backgroundColor: "#050509", padding: "6rem 2rem 4rem", position: "relative" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
-        {/* CTA Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{ textAlign: "center", marginBottom: "4rem" }}
-        >
-          <span style={{
-            fontFamily: '"Inter", sans-serif', fontSize: "0.6rem", letterSpacing: "0.4em",
-            textTransform: "uppercase", color: "#F2D28B", fontWeight: 500, display: "block", marginBottom: "1.5rem"
-          }}>
-            Open to Collaboration
-          </span>
-          <h2 style={{
-            fontFamily: '"Cormorant Garamond", serif', fontSize: "clamp(2rem, 5vw, 3.5rem)",
-            fontWeight: 300, color: "#F6F3F0", lineHeight: 1.15, marginBottom: "1.5rem", letterSpacing: "0.02em"
-          }}>
-            Let&apos;s Build Something<br />Extraordinary.
-          </h2>
-          <p style={{
-            fontFamily: '"Inter", sans-serif', fontSize: "0.85rem", color: "#9E9EAE",
-            maxWidth: 500, margin: "0 auto 2.5rem", lineHeight: 1.8, fontWeight: 300
-          }}>
-            Whether it&apos;s AI, full-stack systems, or something entirely new — I&apos;m always looking for the next challenge.
-          </p>
-
-          {/* CTA Buttons */}
-          <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <a
-              href="https://github.com/rushikeshgoud19"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "12px 28px", borderRadius: 100,
-                border: "1px solid rgba(242,210,139,0.3)", background: "transparent",
-                color: "#F2D28B", fontFamily: '"Inter", sans-serif', fontSize: "0.75rem",
-                letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500,
-                textDecoration: "none", transition: "all 0.3s ease",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#F2D28B"; e.currentTarget.style.color = "#050509"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#F2D28B"; }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-              GitHub
-            </a>
-            <a
-              href="mailto:rushikeshgoud19@gmail.com"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "12px 28px", borderRadius: 100,
-                background: "#F2D28B", color: "#050509",
-                fontFamily: '"Inter", sans-serif', fontSize: "0.75rem",
-                letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600,
-                textDecoration: "none", transition: "all 0.3s ease",
-                cursor: "pointer",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#e5c070"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "#F2D28B"; }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-              Email Me
-            </a>
-          </div>
-        </motion.div>
-
-        {/* Divider */}
-        <div style={{
-          height: 1, width: "100%",
-          background: "linear-gradient(to right, transparent, rgba(242,210,139,0.2), transparent)",
-          marginBottom: "4rem"
-        }} />
-
         {/* Featured Projects */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -218,6 +143,81 @@ export default function ContactCTA() {
                 </div>
               </motion.a>
             ))}
+          </div>
+        </motion.div>
+
+        {/* Divider */}
+        <div style={{
+          height: 1, width: "100%",
+          background: "linear-gradient(to right, transparent, rgba(242,210,139,0.2), transparent)",
+          margin: "4rem 0"
+        }} />
+
+        {/* CTA Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{ textAlign: "center", marginBottom: "2rem" }}
+        >
+          <span style={{
+            fontFamily: '"Inter", sans-serif', fontSize: "0.6rem", letterSpacing: "0.4em",
+            textTransform: "uppercase", color: "#F2D28B", fontWeight: 500, display: "block", marginBottom: "1.5rem"
+          }}>
+            Open to Collaboration
+          </span>
+          <h2 style={{
+            fontFamily: '"Cormorant Garamond", serif', fontSize: "clamp(2rem, 5vw, 3.5rem)",
+            fontWeight: 300, color: "#F6F3F0", lineHeight: 1.15, marginBottom: "1.5rem", letterSpacing: "0.02em"
+          }}>
+            Let&apos;s Build Something<br />Extraordinary.
+          </h2>
+          <p style={{
+            fontFamily: '"Inter", sans-serif', fontSize: "0.85rem", color: "#9E9EAE",
+            maxWidth: 500, margin: "0 auto 2.5rem", lineHeight: 1.8, fontWeight: 300
+          }}>
+            Whether it&apos;s AI, full-stack systems, or something entirely new — I&apos;m always looking for the next challenge.
+          </p>
+
+          {/* CTA Buttons */}
+          <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
+            <a
+              href="https://github.com/rushikeshgoud19"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "12px 28px", borderRadius: 100,
+                border: "1px solid rgba(242,210,139,0.3)", background: "transparent",
+                color: "#F2D28B", fontFamily: '"Inter", sans-serif', fontSize: "0.75rem",
+                letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500,
+                textDecoration: "none", transition: "all 0.3s ease",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#F2D28B"; e.currentTarget.style.color = "#050509"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#F2D28B"; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              GitHub
+            </a>
+            <a
+              href="mailto:rushikeshgoud19@gmail.com"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "12px 28px", borderRadius: 100,
+                background: "#F2D28B", color: "#050509",
+                fontFamily: '"Inter", sans-serif', fontSize: "0.75rem",
+                letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600,
+                textDecoration: "none", transition: "all 0.3s ease",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#e5c070"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#F2D28B"; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              Email Me
+            </a>
           </div>
         </motion.div>
       </div>

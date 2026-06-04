@@ -268,14 +268,14 @@ export default function Hero({ onReady }: HeroProps) {
         rAFRef.current = requestAnimationFrame(trackIntro);
       };
 
-      if (loopVid.readyState >= 3) {
+      if (loopVid.readyState >= 4) {
         onCanPlay();
       } else {
-        loopVid.addEventListener("canplay", onCanPlay, { once: true });
+        loopVid.addEventListener("canplaythrough", onCanPlay, { once: true });
       }
 
       cleanup = () => {
-        loopVid.removeEventListener("canplay", onCanPlay);
+        loopVid.removeEventListener("canplaythrough", onCanPlay);
         stopTracking();
       };
     };
