@@ -87,9 +87,13 @@ export default function Hero() {
   const isResettingRef = useRef(false);
   const targetTimeRef = useRef(0);
   const loopTweenRef = useRef<{ kill: () => void } | null>(null);
+  const portalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isAtPortalRef = useRef(false);
 
   const [, setMode] = useState<"SCRUB" | "LOOP">("LOOP");
   const [currentFrame, setCurrentFrame] = useState<Frame>(frames[0]);
+  const [isAtPortal, setIsAtPortal] = useState(false);
+  const [showPortalPrompt, setShowPortalPrompt] = useState(false);
 
   const getSegmentFromTime = (time: number) => {
     for (let i = 0; i < SEGMENTS.length; i++) {
@@ -181,6 +185,26 @@ export default function Hero() {
               segmentRef.current = seg;
             }
 
+            // Cinematic Portal Logic: Detect if we are paused at a portal entrance
+            const portalTimes = [8, 23, 38, 54, 68.5];
+            const isPortalNow = portalTimes.some(t => Math.abs(nextTime - t) < 0.15);
+            
+            if (isPortalNow) {
+              if (!isAtPortalRef.current) {
+                isAtPortalRef.current = true;
+                setIsAtPortal(true);
+                setShowPortalPrompt(true);
+                if (portalTimeoutRef.current) clearTimeout(portalTimeoutRef.current);
+                portalTimeoutRef.current = setTimeout(() => {
+                  setShowPortalPrompt(false);
+                }, 2000);
+              }
+            } else {
+              isAtPortalRef.current = false;
+              setIsAtPortal(false);
+              setShowPortalPrompt(false);
+            }
+
             // Display entry frame for the initial scroll, then transition to cards
             if (nextTime <= 1.0) {
               setCurrentFrame(frames[0]);
@@ -228,8 +252,39 @@ export default function Hero() {
 
     init();
 
+    // Cinematic Auto-Pilot Spacebar Listener
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        
+        const { gsap } = await import("gsap");
+        const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
+        gsap.registerPlugin(ScrollToPlugin);
+        
+        const currentProgress = lastProgressRef.current;
+        const currentTime = currentProgress * TOTAL_VIDEO_DURATION;
+        
+        // Exact timestamps of the Portals (transitions)
+        const portalTimes = [8, 23, 38, 54, 68.5];
+        const nextPortalTime = portalTimes.find(t => t > currentTime + 2);
+        
+        if (nextPortalTime) {
+          const scrollOffset = (nextPortalTime / 69) * TOTAL_SCROLL_PX;
+          gsap.to(window, {
+            scrollTo: scrollOffset,
+            duration: 2.5,
+            ease: "power2.inOut"
+          });
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       cleanup?.();
+      window.removeEventListener("keydown", handleKeyDown);
+      if (portalTimeoutRef.current) clearTimeout(portalTimeoutRef.current);
     };
   }, [currentFrame.id]);
 
@@ -267,6 +322,34 @@ export default function Hero() {
           position: "absolute", inset: 0, zIndex: 3, pointerEvents: "none",
           background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(5,5,9,0.55) 100%)" 
         }} />
+
+        {/* Cinematic Portal Prompt */}
+        <AnimatePresence>
+          {isAtPortal && showPortalPrompt && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              style={{
+                position: "absolute", inset: 0, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none"
+              }}
+            >
+              <div style={{
+                background: "rgba(5,5,9,0.7)", backdropFilter: "blur(12px)", border: "1px solid rgba(242,210,139,0.2)",
+                padding: "16px 40px", borderRadius: 100, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                boxShadow: "0 20px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(242,210,139,0.05)"
+              }}>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 10, letterSpacing: "0.4em", textTransform: "uppercase", color: "#F2D28B", fontWeight: 600 }}>
+                  Scroll to enter
+                </span>
+                <span style={{ fontFamily: '"Inter", sans-serif', fontSize: 8, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(242,210,139,0.5)" }}>
+                  Initiate manual override
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Scroll Indicator */}
         <AnimatePresence>

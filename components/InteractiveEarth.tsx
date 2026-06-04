@@ -104,7 +104,7 @@ export default function InteractiveEarth() {
       <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col items-center justify-center">
       
       {/* Overlay UI: Elegant Header */}
-      <div className="absolute top-36 left-0 w-full text-center z-10 pointer-events-none flex flex-col items-center">
+      <div className="absolute top-24 left-0 w-full text-center z-10 pointer-events-none flex flex-col items-center">
         <h2 
           className="text-4xl md:text-5xl text-white drop-shadow-2xl" 
           style={{ 
