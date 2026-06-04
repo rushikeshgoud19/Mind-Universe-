@@ -82,7 +82,7 @@ export default function VideoExperience() {
     // Disable GSAP's lag smoothing to prevent weird jumps when tabs are inactive
     gsap.ticker.lagSmoothing(0);
 
-    let ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
       const video = videoRef.current;
       if (!video) return;
 
