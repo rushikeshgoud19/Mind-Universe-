@@ -75,26 +75,35 @@ export const SEGMENTS: SegmentDef[] = [
 
 type Mode = "INTRO" | "LOOP" | "TRANSITIONING" | "COMPLETE";
 
-export default function Hero() {
+interface HeroProps {
+  onReady?: () => void;
+}
+
+export default function Hero({ onReady }: HeroProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const vidRef = useRef<HTMLVideoElement>(null);
 
   const modeRef = useRef<Mode>("INTRO");
   const planetIndexRef = useRef(0);
-  const loopTweenRef = useRef<{ kill: () => void } | null>(null);
-  const transitionTweenRef = useRef<{ kill: () => void } | null>(null);
-  const gsapRef = useRef<typeof import("gsap").gsap | null>(null);
+  const rAFRef = useRef<number | null>(null);
   const scrollLockedRef = useRef(true);
   const wheelCooldownRef = useRef(false);
 
   const [currentFrame, setCurrentFrame] = useState<Frame>(frames[0]);
   const [mode, setMode] = useState<Mode>("INTRO");
 
+  // Helper to stop tracking loops/transitions
+  const stopTracking = useCallback(() => {
+    if (rAFRef.current !== null) {
+      cancelAnimationFrame(rAFRef.current);
+      rAFRef.current = null;
+    }
+  }, []);
+
   // Start the planet loop animation
   const startLoop = useCallback((segIndex: number) => {
-    const gsap = gsapRef.current;
     const vid = vidRef.current;
-    if (!gsap || !vid) return;
+    if (!vid) return;
 
     const seg = SEGMENTS[segIndex];
     modeRef.current = "LOOP";
@@ -105,29 +114,33 @@ export default function Hero() {
     const newFrame = frames.find(f => f.id === seg.frameId);
     if (newFrame) setCurrentFrame(newFrame);
 
-    // Kill any existing loop
-    if (loopTweenRef.current) loopTweenRef.current.kill();
+    stopTracking();
 
-    const fullDuration = seg.loopEnd - seg.loopStart;
-    const durationToEnd = Math.max(0.1, seg.loopEnd - vid.currentTime);
+    // Ensure video is within the loop window and playing naturally
+    if (vid.currentTime < seg.loopStart || vid.currentTime >= seg.loopEnd) {
+      vid.currentTime = seg.loopStart;
+    }
+    
+    vid.playbackRate = 1.0;
+    vid.play().catch(() => {});
 
-    const proxy = { time: vid.currentTime };
-    loopTweenRef.current = gsap.timeline({
-      onUpdate: () => {
-        if (vidRef.current && vidRef.current.readyState >= 2) {
-          vidRef.current.currentTime = proxy.time;
-        }
+    // Monitor playback and snap back to loopStart when reaching loopEnd
+    const trackLoop = () => {
+      if (!vidRef.current || modeRef.current !== "LOOP") return;
+
+      if (vidRef.current.currentTime >= seg.loopEnd) {
+        vidRef.current.currentTime = seg.loopStart;
       }
-    })
-      .to(proxy, { time: seg.loopEnd, duration: durationToEnd, ease: "none" })
-      .to(proxy, { time: seg.loopStart, duration: fullDuration, ease: "none", repeat: -1, yoyo: true });
-  }, []);
+      rAFRef.current = requestAnimationFrame(trackLoop);
+    };
+
+    rAFRef.current = requestAnimationFrame(trackLoop);
+  }, [stopTracking]);
 
   // Transition to the next planet
   const transitionToNext = useCallback(() => {
-    const gsap = gsapRef.current;
     const vid = vidRef.current;
-    if (!gsap || !vid) return;
+    if (!vid) return;
 
     const currentIdx = planetIndexRef.current;
     
@@ -145,90 +158,76 @@ export default function Hero() {
     modeRef.current = "TRANSITIONING";
     setMode("TRANSITIONING");
 
-    // Kill the loop
-    if (loopTweenRef.current) loopTweenRef.current.kill();
+    stopTracking();
 
-    // Play the video from the current segment's transition start through to the next segment's loop start
-    const startTime = currentSeg.transitionStart;
-    const endTime = nextSeg.loopStart;
-    const journeySeconds = endTime - startTime; // Real video seconds to cover
-    const playbackSpeed = 1.0; // Play at 1x speed for maximum smoothness
-    const tweenDuration = journeySeconds / playbackSpeed;
+    // Snap to the transition start point and let it play natively
+    vid.currentTime = currentSeg.transitionStart;
+    vid.playbackRate = 1.0;
+    vid.play().catch(() => {});
 
-    const proxy = { time: startTime };
-    vid.currentTime = startTime;
+    // Monitor playback until it hits the next planet's loopStart
+    const trackTransition = () => {
+      if (!vidRef.current || modeRef.current !== "TRANSITIONING") return;
 
-    transitionTweenRef.current = gsap.to(proxy, {
-      time: endTime,
-      duration: tweenDuration,
-      ease: "none", // Linear = natural video speed
-      onUpdate: () => {
-        if (vidRef.current && vidRef.current.readyState >= 2) {
-          vidRef.current.currentTime = proxy.time;
-        }
-      },
-      onComplete: () => {
-        // Land on the next planet and start looping
+      if (vidRef.current.currentTime >= nextSeg.loopStart) {
         startLoop(currentIdx + 1);
+      } else {
+        rAFRef.current = requestAnimationFrame(trackTransition);
       }
-    });
-  }, [startLoop]);
+    };
+
+    rAFRef.current = requestAnimationFrame(trackTransition);
+  }, [startLoop, stopTracking]);
 
   // Go to a specific planet directly (for dot navigation)
   const goToPlanet = useCallback((targetIdx: number) => {
-    const gsap = gsapRef.current;
     const vid = vidRef.current;
-    if (!gsap || !vid) return;
+    if (!vid) return;
     if (modeRef.current === "TRANSITIONING") return; // Don't interrupt transitions
 
-    // Kill any active tweens
-    if (loopTweenRef.current) loopTweenRef.current.kill();
-    if (transitionTweenRef.current) transitionTweenRef.current.kill();
+    stopTracking();
 
     const targetSeg = SEGMENTS[targetIdx];
     vid.currentTime = targetSeg.loopStart;
     startLoop(targetIdx);
-  }, [startLoop]);
+  }, [startLoop, stopTracking]);
 
   useEffect(() => {
     let cleanup: (() => void) | null = null;
 
-    const init = async () => {
-      const { gsap } = await import("gsap");
-      gsapRef.current = gsap;
-      gsap.ticker.lagSmoothing(0);
-
+    const init = () => {
       const vid = vidRef.current;
       if (!vid) return;
 
       // Wait for video to be ready
       const onCanPlay = () => {
-        // Start the intro: play video from 0 to the first planet's loop zone
+        // Start the intro: play natively from 0 to the first planet
         const seg = SEGMENTS[0];
-        const proxy = { time: 0 };
         vid.currentTime = 0;
+        vid.playbackRate = 1.0;
+        vid.play().catch(() => {});
 
         modeRef.current = "INTRO";
         setMode("INTRO");
         setCurrentFrame(frames[0]);
+        
+        // Signal that the video is ready to the loading screen
+        if (onReady) onReady();
 
-        gsap.to(proxy, {
-          time: seg.loopStart + 2, // Play a couple seconds into the loop zone
-          duration: (seg.loopStart + 2) / 1.0, // At 1x speed
-          ease: "none",
-          onUpdate: () => {
-            if (vidRef.current && vidRef.current.readyState >= 2) {
-              vidRef.current.currentTime = proxy.time;
-            }
-          },
-          onComplete: () => {
-            // Intro done, start looping on planet 1
+        const trackIntro = () => {
+          if (!vidRef.current || modeRef.current !== "INTRO") return;
+
+          if (vidRef.current.currentTime >= seg.loopStart + 2) {
             startLoop(0);
+          } else {
+            rAFRef.current = requestAnimationFrame(trackIntro);
           }
-        });
+        };
+
+        rAFRef.current = requestAnimationFrame(trackIntro);
       };
 
-      if (vid.readyState >= 2) {
+      if (vid.readyState >= 3) {
         onCanPlay();
       } else {
         vid.addEventListener("canplay", onCanPlay, { once: true });
@@ -236,8 +235,7 @@ export default function Hero() {
 
       cleanup = () => {
         vid.removeEventListener("canplay", onCanPlay);
-        if (loopTweenRef.current) loopTweenRef.current.kill();
-        if (transitionTweenRef.current) transitionTweenRef.current.kill();
+        stopTracking();
       };
     };
 
