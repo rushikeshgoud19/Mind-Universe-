@@ -90,6 +90,22 @@ export default function Hero() {
 
   const [, setMode] = useState<"SCRUB" | "LOOP">("LOOP");
   const [currentFrame, setCurrentFrame] = useState<Frame>(frames[0]);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
+  // Preload video as a Blob to guarantee 100% buffer for smooth scrubbing
+  useEffect(() => {
+    fetch(VIDEO_SOURCE)
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        if (vidRef.current) {
+          vidRef.current.src = url;
+          vidRef.current.load();
+          setVideoLoaded(true);
+        }
+      })
+      .catch(err => console.error("Video preload failed", err));
+  }, []);
 
   const getSegmentFromTime = (time: number) => {
     for (let i = 0; i < SEGMENTS.length; i++) {
@@ -278,6 +294,11 @@ export default function Hero() {
         style={{ position: "sticky", top: 0, width: "100%", height: "100vh", overflow: "hidden" }}
       >
         {/* Consolidated High-Performance Video Element */}
+        {!videoLoaded && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "#050509", color: "#F2D28B", fontFamily: '"Inter", sans-serif', fontSize: 12, letterSpacing: "0.2em", textTransform: "uppercase" }}>
+            Loading Universal Core...
+          </div>
+        )}
         <video 
           ref={vidRef} 
           muted 
@@ -287,11 +308,9 @@ export default function Hero() {
           style={{ 
             position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 2,
             willChange: "transform", transform: "translateZ(0)", backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden",
-            opacity: 1
+            opacity: videoLoaded ? 1 : 0, transition: "opacity 1s ease"
           }}
-        >
-          <source src={VIDEO_SOURCE} type="video/mp4" />
-        </video>
+        />
 
         {/* Cinematic Vignette */}
         <div style={{ 
