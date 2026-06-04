@@ -49,7 +49,7 @@ function EarthModel({ radius = 2, setActiveLocation }: { radius?: number, setAct
   });
 
   return (
-    <group ref={earthRef}>
+    <group ref={earthRef} position={[0, -0.8, 0]}>
       <Bounds fit clip observe margin={1.2}>
         <Center>
           {/* The Textured Earth Sphere */}
@@ -102,13 +102,30 @@ export default function InteractiveEarth() {
   return (
     <section id="interactive-earth" className="relative w-full h-screen bg-[#050509] overflow-hidden flex flex-col items-center justify-center">
       
-      {/* Overlay UI: Ask the user where they are from */}
-      <div className="absolute top-20 left-0 w-full text-center z-10 pointer-events-none">
-        <h2 className="text-4xl md:text-5xl font-semibold text-white tracking-wide drop-shadow-lg" style={{ fontFamily: '"Cormorant Garamond", serif' }}>
-          Where are you connecting from?
+      {/* Overlay UI: Elegant Header */}
+      <div className="absolute top-16 left-0 w-full text-center z-10 pointer-events-none flex flex-col items-center">
+        <h2 
+          className="text-4xl md:text-5xl text-white drop-shadow-2xl" 
+          style={{ 
+            fontFamily: '"Cormorant Garamond", serif', 
+            fontWeight: 300, 
+            letterSpacing: "0.05em",
+            textShadow: "0 10px 30px rgba(0,0,0,0.8)"
+          }}
+        >
+          Where does your journey begin?
         </h2>
-        <p className="mt-4 text-[#e5b869] uppercase tracking-[0.2em] text-xs font-semibold drop-shadow-md">
-          Explore the globe and select your sector.
+        <div style={{ width: "40px", height: "1px", background: "rgba(229,184,105,0.4)", margin: "20px 0" }} />
+        <p 
+          className="text-[#e5b869] uppercase text-[10px]" 
+          style={{ 
+            fontFamily: '"Inter", sans-serif',
+            letterSpacing: "0.4em", 
+            fontWeight: 400, 
+            textShadow: "0 4px 10px rgba(0,0,0,0.5)"
+          }}
+        >
+          Select your sector to establish a connection
         </p>
       </div>
 
