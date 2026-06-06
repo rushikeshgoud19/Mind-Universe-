@@ -1,6 +1,6 @@
 import React, { useState, Suspense, useRef, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Html, Center, useTexture, Sphere } from "@react-three/drei";
+import { OrbitControls, Html, Center, useTexture, Sphere, Stars } from "@react-three/drei";
 import * as THREE from "three";
 
 // Coordinates for some interesting places (latitude, longitude)
@@ -126,6 +126,24 @@ function EarthModel({ radius = 2, setActiveLocation, setHoveredLocation }: { rad
   );
 }
 
+function MouseParallax({ children }: { children: React.ReactNode }) {
+  const groupRef = useRef<THREE.Group>(null);
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      // Mouse coordinates are from -1 to 1
+      const targetX = (state.pointer.x * Math.PI) / 10;
+      const targetY = (state.pointer.y * Math.PI) / 10;
+      
+      // Smoothly interpolate group rotation based on mouse
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetX, 0.05);
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, -targetY, 0.05);
+    }
+  });
+
+  return <group ref={groupRef}>{children}</group>;
+}
+
 export default function InteractiveEarth() {
   const [activeLocation, setActiveLocation] = useState<string | null>(null);
   const [hoveredLocation, setHoveredLocation] = useState<string | null>(null);
@@ -171,7 +189,10 @@ export default function InteractiveEarth() {
           <directionalLight position={[-5, -3, -5]} intensity={1.0} color="#ffffff" />
           
           <Suspense fallback={<Html center><span className="text-[#e5b869] text-xs tracking-widest">LOADING WORLD...</span></Html>}>
-            <EarthModel setActiveLocation={setActiveLocation} setHoveredLocation={handleSetHovered} />
+            <MouseParallax>
+              <Stars radius={100} depth={50} count={4000} factor={4} fade speed={2} />
+              <EarthModel setActiveLocation={setActiveLocation} setHoveredLocation={handleSetHovered} />
+            </MouseParallax>
           </Suspense>
 
           <OrbitControls 

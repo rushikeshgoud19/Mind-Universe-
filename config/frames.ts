@@ -27,7 +27,7 @@ export const frames: Frame[] = [
   },
   { 
     id: "scene-1-genesis", 
-    chapter: "The Genesis Artifact", 
+    chapter: "Local AI & Agents", 
     title: "Architecting Intelligence.", 
     subtitle: "Specializing in local AI development, secure environments, and the foundations of autonomous systems.", 
     price: "M.01",
@@ -55,7 +55,7 @@ export const frames: Frame[] = [
   },
   { 
     id: "scene-2-obsidian", 
-    chapter: "The Obsidian Glacier", 
+    chapter: "Enterprise Security", 
     title: "Absolute Session Security.", 
     subtitle: "Engineering automated privacy teardown protocols. Designing workflows that ensure zero residual permissions and complete data revocation.", 
     price: "M.02",
@@ -83,7 +83,7 @@ export const frames: Frame[] = [
   },
   { 
     id: "scene-3-sovereign", 
-    chapter: "The Sovereign Desert", 
+    chapter: "Persistent Data", 
     title: "Persistent Context.", 
     subtitle: "Building autonomous local memory banks. Preserving deep project history, maintaining complex context files, and ensuring continuity.", 
     price: "M.03",
@@ -111,7 +111,7 @@ export const frames: Frame[] = [
   },
   { 
     id: "scene-4-lava", 
-    chapter: "The Lava Crucible", 
+    chapter: "Cloud & DevOps", 
     title: "Resilient Infrastructure.", 
     subtitle: "Forging robust cloud environments, navigating complex GCP architectures, and resolving critical deployment bottlenecks.", 
     price: "M.04",
@@ -139,7 +139,7 @@ export const frames: Frame[] = [
   },
   { 
     id: "scene-5-singularity", 
-    chapter: "The Singularity Event", 
+    chapter: "Autonomous Systems", 
     title: "Autonomous Convergence.", 
     subtitle: "The singularity of secure dev environments, persistent local context, and absolute data sovereignty.", 
     price: "M.05",

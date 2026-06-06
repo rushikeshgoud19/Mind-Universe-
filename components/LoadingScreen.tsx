@@ -107,7 +107,7 @@ export default function LoadingScreen({ isReady }: LoadingScreenProps) {
                 fontWeight: 300,
               }}
             >
-              Synchronizing Modules...
+              Initializing Environment...
             </motion.span>
           </div>
         </motion.div>

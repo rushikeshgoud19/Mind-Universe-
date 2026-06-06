@@ -180,45 +180,74 @@ export default function ContactCTA() {
             Whether it&apos;s AI, full-stack systems, or something entirely new — I&apos;m always looking for the next challenge.
           </p>
 
-          {/* CTA Buttons */}
-          <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <a
-              href="https://github.com/rushikeshgoud19"
-              target="_blank"
-              rel="noopener noreferrer"
+          {/* Contact Form */}
+          <form 
+            action="mailto:rushikeshgoud19@gmail.com" 
+            method="post" 
+            encType="text/plain"
+            style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: 500, margin: "0 auto", textAlign: "left" }}
+          >
+            <div style={{ display: "flex", gap: "1rem" }}>
+              <input 
+                type="text" 
+                name="Name" 
+                placeholder="Name" 
+                required
+                style={{
+                  width: "100%", padding: "14px 20px", borderRadius: 8,
+                  background: "rgba(246,243,240,0.03)", border: "1px solid rgba(246,243,240,0.1)",
+                  color: "#F6F3F0", fontFamily: '"Inter", sans-serif', fontSize: "0.9rem",
+                  outline: "none", transition: "border-color 0.3s"
+                }}
+                onFocus={(e) => e.target.style.borderColor = "rgba(242,210,139,0.5)"}
+                onBlur={(e) => e.target.style.borderColor = "rgba(246,243,240,0.1)"}
+              />
+              <input 
+                type="email" 
+                name="Email" 
+                placeholder="Email" 
+                required
+                style={{
+                  width: "100%", padding: "14px 20px", borderRadius: 8,
+                  background: "rgba(246,243,240,0.03)", border: "1px solid rgba(246,243,240,0.1)",
+                  color: "#F6F3F0", fontFamily: '"Inter", sans-serif', fontSize: "0.9rem",
+                  outline: "none", transition: "border-color 0.3s"
+                }}
+                onFocus={(e) => e.target.style.borderColor = "rgba(242,210,139,0.5)"}
+                onBlur={(e) => e.target.style.borderColor = "rgba(246,243,240,0.1)"}
+              />
+            </div>
+            <textarea 
+              name="Message" 
+              placeholder="Message" 
+              rows={4}
+              required
               style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "12px 28px", borderRadius: 100,
-                border: "1px solid rgba(242,210,139,0.3)", background: "transparent",
-                color: "#F2D28B", fontFamily: '"Inter", sans-serif', fontSize: "0.75rem",
-                letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500,
-                textDecoration: "none", transition: "all 0.3s ease",
-                cursor: "pointer",
+                width: "100%", padding: "14px 20px", borderRadius: 8,
+                background: "rgba(246,243,240,0.03)", border: "1px solid rgba(246,243,240,0.1)",
+                color: "#F6F3F0", fontFamily: '"Inter", sans-serif', fontSize: "0.9rem",
+                outline: "none", resize: "vertical", transition: "border-color 0.3s"
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#F2D28B"; e.currentTarget.style.color = "#050509"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#F2D28B"; }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-              GitHub
-            </a>
-            <a
-              href="mailto:rushikeshgoud19@gmail.com"
+              onFocus={(e) => e.target.style.borderColor = "rgba(242,210,139,0.5)"}
+              onBlur={(e) => e.target.style.borderColor = "rgba(246,243,240,0.1)"}
+            />
+            <button
+              type="submit"
               style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "12px 28px", borderRadius: 100,
+                display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+                padding: "16px 28px", borderRadius: 8,
                 background: "#F2D28B", color: "#050509",
-                fontFamily: '"Inter", sans-serif', fontSize: "0.75rem",
+                fontFamily: '"Inter", sans-serif', fontSize: "0.8rem",
                 letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600,
-                textDecoration: "none", transition: "all 0.3s ease",
-                cursor: "pointer",
+                border: "none", cursor: "pointer", transition: "all 0.3s ease",
+                marginTop: "0.5rem"
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "#e5c070"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "#F2D28B"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#e5c070"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#F2D28B"; e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-              Email Me
-            </a>
-          </div>
+              Send Message
+            </button>
+          </form>
         </motion.div>
       </div>
     </section>

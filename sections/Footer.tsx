@@ -49,12 +49,12 @@ export default function Footer() {
         }}>
           <div>
             <h3 style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.75rem", color: "#F6F3F0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "1.5rem" }}>
-              Experience
+              Projects
             </h3>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {["Genesis Artifact", "Obsidian Glacier", "Sovereign Desert", "Lava Crucible", "Singularity Event"].map(item => (
+              {["Local AI & Agents", "Enterprise Security", "Persistent Data", "Cloud & DevOps", "Autonomous Systems"].map(item => (
                 <li key={item}>
-                  <a href="#" className="body-copy" style={{ textDecoration: "none", transition: "color 0.3s ease" }}
+                  <a href="#catalog" className="body-copy" style={{ textDecoration: "none", transition: "color 0.3s ease" }}
                     onMouseEnter={(e) => e.currentTarget.style.color = "#F2D28B"}
                     onMouseLeave={(e) => e.currentTarget.style.color = "#9E9EAE"}
                   >
@@ -89,16 +89,20 @@ export default function Footer() {
           </div>
           <div>
             <h3 style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.75rem", color: "#F6F3F0", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "1.5rem" }}>
-              House
+              Sitemap
             </h3>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {["Philosophy", "Craft", "Sourcing"].map(item => (
-                <li key={item}>
-                  <a href="#" className="body-copy" style={{ textDecoration: "none", transition: "color 0.3s ease" }}
+              {[
+                { name: "About", href: "#about" },
+                { name: "Projects", href: "#catalog" },
+                { name: "Contact", href: "#contact" },
+              ].map(item => (
+                <li key={item.name}>
+                  <a href={item.href} className="body-copy" style={{ textDecoration: "none", transition: "color 0.3s ease" }}
                     onMouseEnter={(e) => e.currentTarget.style.color = "#F2D28B"}
                     onMouseLeave={(e) => e.currentTarget.style.color = "#9E9EAE"}
                   >
-                    {item}
+                    {item.name}
                   </a>
                 </li>
               ))}
@@ -116,11 +120,20 @@ export default function Footer() {
           gap: "1rem"
         }}>
           <span style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.65rem", color: "#9E9EAE" }}>
-            © 2026 Rushikesh. All rights reserved.
+            © {new Date().getFullYear()} Rushikesh. All rights reserved.
           </span>
-          <span style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.65rem", color: "#9E9EAE" }}>
-            Crafted with intention.
-          </span>
+          <button 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            style={{ 
+              background: "none", border: "none", cursor: "pointer", 
+              fontFamily: '"Inter", sans-serif', fontSize: "0.65rem", 
+              color: "#F2D28B", textTransform: "uppercase", letterSpacing: "0.1em" 
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.textDecoration = "underline"}
+            onMouseLeave={(e) => e.currentTarget.style.textDecoration = "none"}
+          >
+            Back to Top ↑
+          </button>
         </div>
       </div>
     </footer>

@@ -1,8 +1,10 @@
-import { useEffect, useRef } from "react";
-import { frames } from "@/config/frames";
+import { useEffect, useRef, useState } from "react";
+import { frames, Frame } from "@/config/frames";
+import ProjectModal from "@/components/ProjectModal";
 
 export default function Catalog() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [activeModule, setActiveModule] = useState<Frame | null>(null);
 
   useEffect(() => {
     let cleanup: (() => void) | null = null;
@@ -49,24 +51,8 @@ export default function Catalog() {
   // Filter out entry and outro frames
   const products = frames.filter(f => f.price !== null);
 
-  const handleDiscover = async (idx: number) => {
-    const { gsap } = await import("gsap");
-    const { ScrollToPlugin } = await import("gsap/ScrollToPlugin");
-    gsap.registerPlugin(ScrollToPlugin);
-
-    // The hero section is 15180px tall. The video is 69 seconds.
-    // We want to navigate to the "idle center" of each chapter.
-    const targetTimes = [4, 19, 34.5, 50, 65]; 
-    if (idx >= 0 && idx < targetTimes.length) {
-      const time = targetTimes[idx];
-      const scrollOffset = (time / 69) * 15180;
-      
-      gsap.to(window, {
-        scrollTo: scrollOffset,
-        duration: 4.5, // Extended duration for the dramatic curve
-        ease: "expo.inOut" // Starts incredibly slow, goes hyper-fast, then gracefully slows down as it opens
-      });
-    }
+  const handleDiscover = (idx: number) => {
+    setActiveModule(products[idx]);
   };
 
   return (
@@ -156,6 +142,11 @@ export default function Catalog() {
           ))}
         </div>
       </div>
+      
+      <ProjectModal 
+        module={activeModule} 
+        onClose={() => setActiveModule(null)} 
+      />
     </section>
   );
 }

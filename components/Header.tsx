@@ -99,90 +99,17 @@ export default function Header() {
 
         <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.1)" }} />
 
-        {/* Experience Dropdown Toggle */}
-        <div
-          style={{ position: "relative" }}
-          onMouseEnter={() => setIsExperienceOpen(true)}
-          onMouseLeave={() => setIsExperienceOpen(false)}
+        <a
+          href="#about"
+          style={{
+            fontFamily: '"Cormorant Garamond", serif',
+            fontSize: 15,
+            color: "#F6F3F0",
+            textDecoration: "none",
+          }}
         >
-          <button
-            style={{
-              fontFamily: '"Cormorant Garamond", serif',
-              fontSize: 15,
-              color: "#F6F3F0",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            Experience
-            <span style={{ fontSize: 10 }}>▼</span>
-          </button>
-
-          <AnimatePresence>
-            {isExperienceOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  position: "absolute",
-                  top: "100%",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  marginTop: 16,
-                  background: "rgba(5,5,9,0.9)",
-                  backdropFilter: "blur(24px)",
-                  borderRadius: 16,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  padding: "16px 0",
-                  display: "flex",
-                  flexDirection: "column",
-                  minWidth: 160,
-                  overflow: "hidden",
-                }}
-              >
-                {[
-                  "Genesis Artifact",
-                  "Obsidian Glacier",
-                  "Sovereign Desert",
-                  "Lava Crucible",
-                  "Singularity Event",
-                ].map((item, i) => (
-                  <motion.a
-                    key={item}
-                    href="#"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    style={{
-                      fontFamily: '"Cormorant Garamond", serif',
-                      fontSize: 14,
-                      color: "rgba(246,243,240,0.7)",
-                      padding: "8px 24px",
-                      textDecoration: "none",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "rgba(242,210,139,0.07)";
-                      e.currentTarget.style.color = "#F6F3F0";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "rgba(246,243,240,0.7)";
-                    }}
-                  >
-                    {item}
-                  </motion.a>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+          About
+        </a>
 
         <a
           href="#catalog"
@@ -193,27 +120,17 @@ export default function Header() {
             textDecoration: "none",
           }}
         >
-          Universe
+          Projects
         </a>
 
-        <a
-          href="#story"
-          style={{
-            fontFamily: '"Cormorant Garamond", serif',
-            fontSize: 15,
-            color: "#F6F3F0",
-            textDecoration: "none",
-          }}
-        >
-          Story
-        </a>
+
 
         <div style={{ width: 1, height: 16, background: "rgba(255,255,255,0.1)" }} />
 
         <button
           onClick={() => {
-            const footerEl = document.getElementById("footer");
-            if (footerEl) footerEl.scrollIntoView({ behavior: "smooth" });
+            const contactEl = document.getElementById("contact");
+            if (contactEl) contactEl.scrollIntoView({ behavior: "smooth" });
           }}
           style={{
             padding: "6px 16px",
