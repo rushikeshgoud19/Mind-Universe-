@@ -27,141 +27,141 @@ export const frames: Frame[] = [
   },
   { 
     id: "scene-1-genesis", 
-    chapter: "AI & Desktop Engineering", 
-    title: "Architecting Intelligence.", 
-    subtitle: "Specializing in local AI development, secure environments, and the foundations of autonomous systems.", 
+    chapter: "Project 01", 
+    title: "Mizune", 
+    subtitle: "A desktop app with a floating transparent 3D anime character (VRM) rendered via Three.js inside Electron.", 
     price: "M.01",
     notes: ["Local AI", "Electron", "Three.js", "WebSockets"],
     projects: [
       {
-        id: "g-1",
-        title: "Mizune (VRM Companion)",
-        description: "A desktop app with a floating transparent 3D anime character (VRM) rendered via Three.js inside Electron.",
-        techStack: ["Electron", "Three.js", "Python", "FastAPI", "Gemini AI"]
+        id: "p1-1",
+        title: "Local AI Integration",
+        description: "Integrated FastAPI and Gemini AI for advanced conversational capabilities and local processing.",
+        techStack: ["Python", "FastAPI", "Gemini AI"]
       },
       {
-        id: "g-2",
-        title: "HCL Call Center API",
-        description: "Backend architecture built for robust call center operations and integrations.",
-        techStack: ["Python", "FastAPI"]
+        id: "p1-2",
+        title: "3D Rendering Engine",
+        description: "Real-time rendering of expressive VRM models using Three.js.",
+        techStack: ["Three.js", "WebGL"]
       },
       {
-        id: "g-3",
-        title: "Voice Orchestration Engine",
-        description: "Engineered a Python WebSocket backend integrating Edge TTS with SQLite audio caching for low-latency voice synthesis.",
-        techStack: ["Python", "Edge TTS", "SQLite"]
+        id: "p1-3",
+        title: "Electron Architecture",
+        description: "Packaged as a lightweight, cross-platform desktop application with transparent window support.",
+        techStack: ["Electron", "Node.js"]
       }
     ]
   },
   { 
     id: "scene-2-obsidian", 
-    chapter: "Autonomous Hardware", 
-    title: "Absolute Control.", 
-    subtitle: "Engineering hardware systems with real-time perception and multi-agent coordination.", 
+    chapter: "Project 02", 
+    title: "MY-AI", 
+    subtitle: "A custom-built AI assistant with autonomous reasoning capabilities and multi-model orchestration.", 
     price: "M.02",
-    notes: ["Robotics", "Computer Vision", "Hardware Integration"],
+    notes: ["AI/ML", "NLP", "Python"],
     projects: [
       {
-        id: "o-1",
-        title: "RescueWing (SAR Drone)",
-        description: "Built a 450 mm quadcopter with Pixhawk FC and Raspberry Pi 4 running YOLOv8-nano for real-time aerial survivor detection.",
-        techStack: ["Pixhawk", "Raspberry Pi 4", "YOLOv8-nano"]
+        id: "p2-1",
+        title: "Autonomous Reasoning",
+        description: "Engineered complex logic flows enabling the AI to make autonomous decisions and execute tasks.",
+        techStack: ["Python", "Logic Flows"]
       },
       {
-        id: "o-2",
-        title: "Autonomous Navigation",
-        description: "Programmed MAVLink-based autonomous waypoint navigation with a lawnmower search pattern via ArduPilot SITL simulation.",
-        techStack: ["MAVLink", "ArduPilot", "Python"]
+        id: "p2-2",
+        title: "Multi-Model Orchestration",
+        description: "Seamlessly routes tasks between specialized AI models to achieve optimal results for any given prompt.",
+        techStack: ["AI/ML", "API Integration"]
       },
       {
-        id: "o-3",
-        title: "Multi-Agent Brain",
-        description: "Designed a multi-agent software brain (Perception, Decision, Communication) for autonomous operations. Presented at Makers Conclave 2026.",
-        techStack: ["Multi-Agent Systems", "Python"]
+        id: "p2-3",
+        title: "NLP Engine",
+        description: "Advanced natural language processing for deep query understanding and context retention.",
+        techStack: ["NLP", "Machine Learning"]
       }
     ]
   },
   { 
     id: "scene-3-sovereign", 
-    chapter: "Full-Stack Platforms", 
-    title: "Persistent Context.", 
-    subtitle: "Building dynamic web platforms that preserve history, context, and intelligent workflows.", 
+    chapter: "Project 03", 
+    title: "RUXAILAB (GSoC)", 
+    subtitle: "Usability testing platform where my open-source contributions are actively used to maintain core stability.", 
     price: "M.03",
-    notes: ["Next.js", "TypeScript", "Tailwind CSS"],
+    notes: ["Open Source", "Vue.js", "Architecture"],
     projects: [
       {
-        id: "s-1",
-        title: "Mind Universe",
-        description: "A full-stack web platform built in Next.js with a modular component and sections architecture, deployed on Netlify.",
-        techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Netlify"]
+        id: "p3-1",
+        title: "Stability in Production",
+        description: "My core stability patches from the 'Spring Cleaning' initiative are actively used to keep the platform reliable.",
+        techStack: ["Open Source", "Bug Fixing"]
       },
       {
-        id: "s-2",
-        title: "Client-View-Mentozy",
-        description: "A dedicated client-facing platform streamlining mentorship workflows and data visualization.",
-        techStack: ["TypeScript", "Next.js"]
+        id: "p3-2",
+        title: "Crash Prevention",
+        description: "My runtime optimization code actively prevents system crashes during large-scale UX evaluations.",
+        techStack: ["Testing", "Debugging"]
       },
       {
-        id: "s-3",
-        title: "Agentic Design Integration",
-        description: "Integrated AI-driven features using an agent-based design, enabling intelligent interactions within platforms.",
-        techStack: ["AI Agents", "React"]
+        id: "p3-3",
+        title: "Infrastructure Scaling",
+        description: "My architectural refactors serve as the foundation for their continued open-source scaling efforts.",
+        techStack: ["Architecture", "Vue.js"]
       }
     ]
   },
   { 
     id: "scene-4-lava", 
-    chapter: "Data & ML Pipelines", 
-    title: "Resilient Logic.", 
-    subtitle: "Forging robust predictive tools and scalable supply chain solutions.", 
+    chapter: "Project 04", 
+    title: "IBM Hackathon (Top 4)", 
+    subtitle: "Developed a resilient supply chain optimization tool using Machine Learning. Achieved Top 4 placement.", 
     price: "M.04",
     notes: ["Machine Learning", "Data Pipelines", "Python"],
     projects: [
       {
-        id: "l-1",
-        title: "IBM Hackathon (Top 4)",
-        description: "Developed a resilient supply chain optimization tool using ML to predict shortages and optimize routes.",
-        techStack: ["Python", "Data Science", "Machine Learning"]
+        id: "p4-1",
+        title: "Shortage Prediction",
+        description: "Built ML models to accurately predict inventory shortages before they disrupt the supply chain.",
+        techStack: ["Machine Learning", "Scikit-Learn"]
       },
       {
-        id: "l-2",
-        title: "IPL Prediction Tool",
-        description: "A predictive analytics tool capable of forecasting IPL match outcomes based on historical datasets.",
-        techStack: ["Python", "Scikit-Learn", "Pandas"]
+        id: "p4-2",
+        title: "Route Optimization",
+        description: "Implemented dynamic algorithms to optimize supply chain routing and logistics.",
+        techStack: ["Algorithms", "Python"]
       },
       {
-        id: "l-3",
-        title: "blackhole-portfolio",
-        description: "An interactive and immersive data visualization portfolio.",
-        techStack: ["TypeScript", "React"]
+        id: "p4-3",
+        title: "Data Pipelines",
+        description: "Constructed highly scalable data pipelines to process massive datasets in real-time.",
+        techStack: ["Data Science", "Pandas"]
       }
     ]
   },
   { 
     id: "scene-5-singularity", 
-    chapter: "Open Source", 
-    title: "Autonomous Convergence.", 
-    subtitle: "Contributing to the singularity of secure development and open-source ecosystems.", 
+    chapter: "Project 05", 
+    title: "RescueWing", 
+    subtitle: "A 450 mm quadcopter equipped with computer vision for real-time aerial survivor detection.", 
     price: "M.05",
-    notes: ["Open Source", "GSoC", "System Stability"],
+    notes: ["Hardware", "Computer Vision", "Robotics"],
     projects: [
       {
-        id: "si-1",
-        title: "RUXAILAB (GSoC)",
-        description: "Authored core stability patches and infrastructure refactors under the 'Spring Cleaning the Code' initiative.",
-        techStack: ["Open Source", "Software Engineering"]
+        id: "p5-1",
+        title: "Hardware Architecture",
+        description: "Custom-built SAR drone utilizing a Pixhawk Flight Controller and Raspberry Pi 4 for on-board processing.",
+        techStack: ["Pixhawk", "Raspberry Pi"]
       },
       {
-        id: "si-2",
-        title: "Runtime Crash Prevention",
-        description: "Optimized code to prevent runtime crashes and enhanced architectural safety nets for large-scale open-source scaling.",
-        techStack: ["Testing", "Architecture", "Debugging"]
+        id: "p5-2",
+        title: "Computer Vision",
+        description: "Running YOLOv8-nano for real-time, ultra low-latency aerial survivor detection.",
+        techStack: ["YOLOv8", "Computer Vision"]
       },
       {
-        id: "si-3",
-        title: "Autoware Fork",
-        description: "Involvement with the world's leading open-source software project for autonomous driving.",
-        techStack: ["C++", "ROS", "Autonomous Driving"]
+        id: "p5-3",
+        title: "Autonomous Navigation",
+        description: "Programmed MAVLink-based autonomous waypoint navigation and lawnmower search patterns.",
+        techStack: ["MAVLink", "ArduPilot", "Python"]
       }
     ]
   },
