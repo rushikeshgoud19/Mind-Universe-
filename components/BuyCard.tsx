@@ -25,9 +25,8 @@ export default function BuyCard({ frame, visible }: BuyCardProps) {
             blurIntensity="lg"
             shadowIntensity="xs"
             glowIntensity="xs"
-            draggable={false}
-            className="p-7 bg-black/25 border border-white/10"
-            style={{ maxWidth: 280 }}
+            className="p-7 bg-black/25 border border-white/10 w-full"
+            style={{ maxWidth: "min(280px, 90vw)" }}
           >
             {frame.title && (
               <h2

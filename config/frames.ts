@@ -27,141 +27,141 @@ export const frames: Frame[] = [
   },
   { 
     id: "scene-1-genesis", 
-    chapter: "Local AI & Agents", 
+    chapter: "AI & Desktop Engineering", 
     title: "Architecting Intelligence.", 
     subtitle: "Specializing in local AI development, secure environments, and the foundations of autonomous systems.", 
     price: "M.01",
-    notes: ["Local AI", "Claude Code", "Model Safety"],
+    notes: ["Local AI", "Electron", "Three.js", "WebSockets"],
     projects: [
       {
         id: "g-1",
-        title: "Claude Automator",
-        description: "A local daemon that interfaces directly with Claude Code for autonomous codebase refactoring.",
-        techStack: ["TypeScript", "Node.js", "Anthropic API"]
+        title: "Mizune (VRM Companion)",
+        description: "A desktop app with a floating transparent 3D anime character (VRM) rendered via Three.js inside Electron.",
+        techStack: ["Electron", "Three.js", "Python", "FastAPI", "Gemini AI"]
       },
       {
         id: "g-2",
-        title: "Local LLM Gateway",
-        description: "Secure routing layer for executing offline LLMs with strict safety boundaries and memory limits.",
-        techStack: ["Python", "Ollama", "FastAPI"]
+        title: "HCL Call Center API",
+        description: "Backend architecture built for robust call center operations and integrations.",
+        techStack: ["Python", "FastAPI"]
       },
       {
         id: "g-3",
-        title: "Context RAG Engine",
-        description: "High-speed document retrieval system mapping thousands of markdown files instantly.",
-        techStack: ["Rust", "Vector DB", "React"]
+        title: "Voice Orchestration Engine",
+        description: "Engineered a Python WebSocket backend integrating Edge TTS with SQLite audio caching for low-latency voice synthesis.",
+        techStack: ["Python", "Edge TTS", "SQLite"]
       }
     ]
   },
   { 
     id: "scene-2-obsidian", 
-    chapter: "Enterprise Security", 
-    title: "Absolute Session Security.", 
-    subtitle: "Engineering automated privacy teardown protocols. Designing workflows that ensure zero residual permissions and complete data revocation.", 
+    chapter: "Autonomous Hardware", 
+    title: "Absolute Control.", 
+    subtitle: "Engineering hardware systems with real-time perception and multi-agent coordination.", 
     price: "M.02",
-    notes: ["Zero-Trust", "Data Revocation", "Session Security"],
+    notes: ["Robotics", "Computer Vision", "Hardware Integration"],
     projects: [
       {
         id: "o-1",
-        title: "Zero-Trust Identity",
-        description: "Ephemeral authentication tokens that self-destruct after 60 seconds of inactivity.",
-        techStack: ["Next.js", "JWT", "Redis"]
+        title: "RescueWing (SAR Drone)",
+        description: "Built a 450 mm quadcopter with Pixhawk FC and Raspberry Pi 4 running YOLOv8-nano for real-time aerial survivor detection.",
+        techStack: ["Pixhawk", "Raspberry Pi 4", "YOLOv8-nano"]
       },
       {
         id: "o-2",
-        title: "Session Teardown API",
-        description: "Automated webhook system that wipes database states after user logout events.",
-        techStack: ["Go", "PostgreSQL", "Docker"]
+        title: "Autonomous Navigation",
+        description: "Programmed MAVLink-based autonomous waypoint navigation with a lawnmower search pattern via ArduPilot SITL simulation.",
+        techStack: ["MAVLink", "ArduPilot", "Python"]
       },
       {
         id: "o-3",
-        title: "Data Vault Proxy",
-        description: "Reverse proxy that encrypts and decrypts payloads on the fly without storing state.",
-        techStack: ["Nginx", "Lua", "Crypto"]
+        title: "Multi-Agent Brain",
+        description: "Designed a multi-agent software brain (Perception, Decision, Communication) for autonomous operations. Presented at Makers Conclave 2026.",
+        techStack: ["Multi-Agent Systems", "Python"]
       }
     ]
   },
   { 
     id: "scene-3-sovereign", 
-    chapter: "Persistent Data", 
+    chapter: "Full-Stack Platforms", 
     title: "Persistent Context.", 
-    subtitle: "Building autonomous local memory banks. Preserving deep project history, maintaining complex context files, and ensuring continuity.", 
+    subtitle: "Building dynamic web platforms that preserve history, context, and intelligent workflows.", 
     price: "M.03",
-    notes: ["Vector Db", "Context Memory", "LLM History"],
+    notes: ["Next.js", "TypeScript", "Tailwind CSS"],
     projects: [
       {
         id: "s-1",
-        title: "Vector Memory Bank",
-        description: "A persistent semantic storage layer for long-term agent memory retention.",
-        techStack: ["Pinecone", "LangChain", "Next.js"]
+        title: "Mind Universe",
+        description: "A full-stack web platform built in Next.js with a modular component and sections architecture, deployed on Netlify.",
+        techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Netlify"]
       },
       {
         id: "s-2",
-        title: "State Preserver",
-        description: "Real-time sync engine that snapshots active terminal sessions and restores them on boot.",
-        techStack: ["Electron", "SQLite", "React"]
+        title: "Client-View-Mentozy",
+        description: "A dedicated client-facing platform streamlining mentorship workflows and data visualization.",
+        techStack: ["TypeScript", "Next.js"]
       },
       {
         id: "s-3",
-        title: "History Daemon",
-        description: "Background service that logs and indexes all API requests for future context injection.",
-        techStack: ["Go", "GraphQL", "MongoDB"]
+        title: "Agentic Design Integration",
+        description: "Integrated AI-driven features using an agent-based design, enabling intelligent interactions within platforms.",
+        techStack: ["AI Agents", "React"]
       }
     ]
   },
   { 
     id: "scene-4-lava", 
-    chapter: "Cloud & DevOps", 
-    title: "Resilient Infrastructure.", 
-    subtitle: "Forging robust cloud environments, navigating complex GCP architectures, and resolving critical deployment bottlenecks.", 
+    chapter: "Data & ML Pipelines", 
+    title: "Resilient Logic.", 
+    subtitle: "Forging robust predictive tools and scalable supply chain solutions.", 
     price: "M.04",
-    notes: ["GCP Cloud", "DevOps CI/CD", "Docker/K8s"],
+    notes: ["Machine Learning", "Data Pipelines", "Python"],
     projects: [
       {
         id: "l-1",
-        title: "K8s Fleet Manager",
-        description: "Dashboard for orchestrating and auto-scaling hundreds of microservices globally.",
-        techStack: ["Kubernetes", "Helm", "Vue"]
+        title: "IBM Hackathon (Top 4)",
+        description: "Developed a resilient supply chain optimization tool using ML to predict shortages and optimize routes.",
+        techStack: ["Python", "Data Science", "Machine Learning"]
       },
       {
         id: "l-2",
-        title: "GCP Firewall Node",
-        description: "Custom Terraform modules that provision military-grade VPC networks automatically.",
-        techStack: ["Terraform", "GCP", "Bash"]
+        title: "IPL Prediction Tool",
+        description: "A predictive analytics tool capable of forecasting IPL match outcomes based on historical datasets.",
+        techStack: ["Python", "Scikit-Learn", "Pandas"]
       },
       {
         id: "l-3",
-        title: "CI/CD Accelerator",
-        description: "Pipeline optimization scripts that reduced build times from 45 minutes to 3 minutes.",
-        techStack: ["GitHub Actions", "Docker", "Node.js"]
+        title: "blackhole-portfolio",
+        description: "An interactive and immersive data visualization portfolio.",
+        techStack: ["TypeScript", "React"]
       }
     ]
   },
   { 
     id: "scene-5-singularity", 
-    chapter: "Autonomous Systems", 
+    chapter: "Open Source", 
     title: "Autonomous Convergence.", 
-    subtitle: "The singularity of secure dev environments, persistent local context, and absolute data sovereignty.", 
+    subtitle: "Contributing to the singularity of secure development and open-source ecosystems.", 
     price: "M.05",
-    notes: ["Web3 / Sovereign", "AI Agents", "Autonomous Systems"],
+    notes: ["Open Source", "GSoC", "System Stability"],
     projects: [
       {
         id: "si-1",
-        title: "Autonomous Agent Hive",
-        description: "A network of specialized AI agents negotiating and solving complex code tasks.",
-        techStack: ["Python", "Anthropic", "WebSockets"]
+        title: "RUXAILAB (GSoC)",
+        description: "Authored core stability patches and infrastructure refactors under the 'Spring Cleaning the Code' initiative.",
+        techStack: ["Open Source", "Software Engineering"]
       },
       {
         id: "si-2",
-        title: "Global Sync Core",
-        description: "The central nervous system linking local databases with edge nodes worldwide.",
-        techStack: ["Rust", "gRPC", "EdgeDB"]
+        title: "Runtime Crash Prevention",
+        description: "Optimized code to prevent runtime crashes and enhanced architectural safety nets for large-scale open-source scaling.",
+        techStack: ["Testing", "Architecture", "Debugging"]
       },
       {
         id: "si-3",
-        title: "Sovereign Cloud",
-        description: "A decentralized alternative to AWS providing absolute data ownership to users.",
-        techStack: ["Solidity", "IPFS", "Next.js"]
+        title: "Autoware Fork",
+        description: "Involvement with the world's leading open-source software project for autonomous driving.",
+        techStack: ["C++", "ROS", "Autonomous Driving"]
       }
     ]
   },

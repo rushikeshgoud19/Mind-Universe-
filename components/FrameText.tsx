@@ -23,9 +23,8 @@ export default function FrameText({ frame, visible }: FrameTextProps) {
             blurIntensity="lg"
             shadowIntensity="xs"
             glowIntensity="xs"
-            draggable={false}
-            className="p-7 bg-black/25 border border-white/10"
-            style={{ maxWidth: 300 }}
+            className="p-7 bg-black/25 border border-white/10 w-full"
+            style={{ maxWidth: "min(300px, 90vw)" }}
           >
             {frame.chapter && (
               <p

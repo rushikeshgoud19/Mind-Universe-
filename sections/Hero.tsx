@@ -73,7 +73,7 @@ interface HeroProps {
 
 export default function Hero({ onReady }: HeroProps) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const loopVidRef = useRef<HTMLVideoElement>(null);
+  const loopVidsRef = useRef<(HTMLVideoElement | null)[]>([]);
   const warpVidRef = useRef<HTMLVideoElement>(null);
 
   const modeRef = useRef<Mode>("INTRO");
@@ -89,7 +89,7 @@ export default function Hero({ onReady }: HeroProps) {
   const [mode, setMode] = useState<Mode>("INTRO");
   const [loopOpacity, setLoopOpacity] = useState(1);
   const [warpOpacity, setWarpOpacity] = useState(0);
-  const [currentLoopSrc, setCurrentLoopSrc] = useState(SEGMENTS[0].loopSrc);
+  const [activePlanetIdx, setActivePlanetIdx] = useState(0);
 
   const stopTracking = useCallback(() => {
     if (rAFRef.current !== null) {
@@ -102,17 +102,18 @@ export default function Hero({ onReady }: HeroProps) {
   useEffect(() => {
     let rafId: number;
     const trackProgress = () => {
-      if (modeRef.current === "LOOP" && loopVidRef.current) {
+      const currentLoopVid = loopVidsRef.current[planetIndexRef.current];
+      if (modeRef.current === "LOOP" && currentLoopVid) {
         const seg = SEGMENTS[planetIndexRef.current];
-        const time = loopVidRef.current.currentTime;
+        const time = currentLoopVid.currentTime;
         const dur = seg.loopDuration;
         // Loop video is 2x duration (forward + reverse). We map it back to 0->1->0
         if (dur > 0) {
           progressRef.current = time <= dur ? time / dur : (dur * 2 - time) / dur;
         }
-      } else if (modeRef.current === "INTRO" && loopVidRef.current) {
+      } else if (modeRef.current === "INTRO" && currentLoopVid) {
         const seg = SEGMENTS[0];
-        const time = loopVidRef.current.currentTime;
+        const time = currentLoopVid.currentTime;
         if (seg.loopDuration > 0) {
            progressRef.current = Math.min(1, time / seg.loopDuration);
         }
@@ -126,7 +127,7 @@ export default function Hero({ onReady }: HeroProps) {
   }, []);
 
   const startLoop = useCallback((segIndex: number, isFromIntro = false) => {
-    const loopVid = loopVidRef.current;
+    const loopVid = loopVidsRef.current[segIndex];
     const warpVid = warpVidRef.current;
     if (!loopVid || !warpVid) return;
 
@@ -134,6 +135,7 @@ export default function Hero({ onReady }: HeroProps) {
     modeRef.current = "LOOP";
     setMode("LOOP");
     planetIndexRef.current = segIndex;
+    setActivePlanetIdx(segIndex);
 
     const newFrame = frames.find(f => f.id === seg.frameId);
     if (newFrame) setCurrentFrame(newFrame);
@@ -145,6 +147,10 @@ export default function Hero({ onReady }: HeroProps) {
     setLoopOpacity(1);
     warpVid.pause();
 
+    loopVidsRef.current.forEach((vid, idx) => {
+      if (vid && idx !== segIndex) vid.pause();
+    });
+
     if (!isFromIntro) {
       loopVid.currentTime = 0;
       loopVid.play().catch(() => {});
@@ -153,9 +159,8 @@ export default function Hero({ onReady }: HeroProps) {
   }, [stopTracking]);
 
   const transitionToNext = useCallback(() => {
-    const loopVid = loopVidRef.current;
     const warpVid = warpVidRef.current;
-    if (!loopVid || !warpVid) return;
+    if (!warpVid) return;
 
     const currentIdx = planetIndexRef.current;
     
@@ -185,9 +190,6 @@ export default function Hero({ onReady }: HeroProps) {
     setLoopOpacity(0);
     
     setTimeout(() => {
-      // Now that loop video is hidden, it is safe to preload the next loop src
-      setCurrentLoopSrc(nextSeg.loopSrc);
-
       const warpVid = warpVidRef.current;
       if (!warpVid) return;
 
@@ -217,8 +219,6 @@ export default function Hero({ onReady }: HeroProps) {
   }, [startLoop, stopTracking]);
 
   const goToPlanet = useCallback((targetIdx: number) => {
-    const warpVid = warpVidRef.current;
-    if (!warpVid) return;
     if (modeRef.current === "TRANSITIONING") return;
 
     stopTracking();
@@ -226,23 +226,37 @@ export default function Hero({ onReady }: HeroProps) {
     modeRef.current = "TRANSITIONING";
     setMode("TRANSITIONING");
 
-    setLoopOpacity(0);
+    // Pre-play target video for smooth crossfade
+    const targetVid = loopVidsRef.current[targetIdx];
+    if (targetVid) {
+      targetVid.currentTime = 0;
+      targetVid.play().catch(() => {});
+    }
+
+    // Instantly swap active video and crossfade
+    planetIndexRef.current = targetIdx;
+    setActivePlanetIdx(targetIdx);
+    setLoopOpacity(1);
     setWarpOpacity(0);
+    
+    const newFrame = frames.find(f => f.id === SEGMENTS[targetIdx].frameId);
+    if (newFrame) setCurrentFrame(newFrame);
 
     setTimeout(() => {
-      setCurrentLoopSrc(SEGMENTS[targetIdx].loopSrc);
-      setTimeout(() => {
-        startLoop(targetIdx);
-      }, 100); // small buffer for src swap
+      modeRef.current = "LOOP";
+      setMode("LOOP");
+      loopVidsRef.current.forEach((vid, idx) => {
+        if (vid && idx !== targetIdx) vid.pause();
+      });
     }, 400);
 
-  }, [startLoop, stopTracking]);
+  }, [stopTracking]);
 
   useEffect(() => {
     let cleanup: (() => void) | null = null;
 
     const init = () => {
-      const loopVid = loopVidRef.current;
+      const loopVid = loopVidsRef.current[0];
       if (!loopVid) return;
 
       const onCanPlay = () => {
@@ -256,9 +270,10 @@ export default function Hero({ onReady }: HeroProps) {
         if (onReady) onReady();
 
         const trackIntro = () => {
-          if (!loopVidRef.current || modeRef.current !== "INTRO") return;
+          const currentLoopVid = loopVidsRef.current[0];
+          if (!currentLoopVid || modeRef.current !== "INTRO") return;
           // When intro hits the end of the first forward loop, switch state to LOOP
-          if (loopVidRef.current.currentTime >= SEGMENTS[0].loopDuration) {
+          if (currentLoopVid.currentTime >= SEGMENTS[0].loopDuration) {
              startLoop(0, true);
           } else {
              rAFRef.current = requestAnimationFrame(trackIntro);
@@ -287,6 +302,13 @@ export default function Hero({ onReady }: HeroProps) {
     };
   }, [startLoop, stopTracking, onReady]);
 
+  const transitionToPrev = useCallback(() => {
+    const currentIdx = planetIndexRef.current;
+    if (currentIdx > 0) {
+      goToPlanet(currentIdx - 1);
+    }
+  }, [goToPlanet]);
+
   // Wheel event listener
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -294,16 +316,27 @@ export default function Hero({ onReady }: HeroProps) {
       const stage = stageRef.current;
       if (!stage) return;
 
+      if (window.scrollY > 50) {
+        return;
+      }
+
       const rect = stage.getBoundingClientRect();
       if (rect.bottom < 0 || rect.top > window.innerHeight) return;
 
       e.preventDefault();
 
-      if (e.deltaY > 0 && modeRef.current === "LOOP") {
+      if (modeRef.current === "LOOP") {
         if (wheelCooldownRef.current) return;
-        wheelCooldownRef.current = true;
-        setTimeout(() => { wheelCooldownRef.current = false; }, 1000);
-        transitionToNext();
+        
+        if (e.deltaY > 0) {
+          wheelCooldownRef.current = true;
+          setTimeout(() => { wheelCooldownRef.current = false; }, 1000);
+          transitionToNext();
+        } else if (e.deltaY < 0 && planetIndexRef.current > 0) {
+          wheelCooldownRef.current = true;
+          setTimeout(() => { wheelCooldownRef.current = false; }, 1000);
+          transitionToPrev();
+        }
       }
     };
 
@@ -311,7 +344,7 @@ export default function Hero({ onReady }: HeroProps) {
     return () => {
       window.removeEventListener("wheel", handleWheel);
     };
-  }, [transitionToNext]);
+  }, [transitionToNext, transitionToPrev]);
 
   const isAtTop = currentFrame.id === "entry";
   const isIntro = mode === "INTRO";
@@ -342,21 +375,24 @@ export default function Hero({ onReady }: HeroProps) {
             }}
           />
 
-          {/* Seamless Baked Loop Video Layer */}
-          <video 
-            ref={loopVidRef} 
-            src={currentLoopSrc}
-            muted 
-            playsInline 
-            preload="auto" 
-            loop
-            style={{ 
-              position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
-              opacity: loopOpacity,
-              transition: "opacity 0.4s ease-in-out",
-              willChange: "transform, opacity", transform: "translateZ(0)",
-            }}
-          />
+          {/* Seamless Baked Loop Video Layers */}
+          {SEGMENTS.map((seg, idx) => (
+            <video 
+              key={idx}
+              ref={el => { loopVidsRef.current[idx] = el; }}
+              src={seg.loopSrc}
+              muted 
+              playsInline 
+              preload="auto" 
+              loop
+              style={{ 
+                position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover",
+                opacity: activePlanetIdx === idx ? loopOpacity : 0,
+                transition: "opacity 0.4s ease-in-out",
+                willChange: "transform, opacity", transform: "translateZ(0)",
+              }}
+            />
+          ))}
         </div>
 
         {/* Scroll Indicator */}

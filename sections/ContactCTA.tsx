@@ -2,39 +2,39 @@ import { motion } from "motion/react";
 
 const PROJECTS = [
   {
-    name: "MY-AI",
-    label: "Flagship",
-    description: "A custom-built AI assistant with autonomous reasoning capabilities and multi-model orchestration.",
-    tech: ["Python", "AI/ML", "NLP"],
-    url: "https://github.com/rushikeshgoud19/MY-AI",
+    name: "Mizune (VRM Companion)",
+    label: "Local AI & 3D",
+    description: "A desktop app with a floating transparent 3D anime character (VRM) rendered via Three.js inside Electron.",
+    tech: ["Electron", "Three.js", "Python"],
+    url: "https://github.com/rushikeshgoud19",
   },
   {
-    name: "RUXAILAB",
+    name: "RescueWing (SAR Drone)",
+    label: "Hardware & CV",
+    description: "Built a 450 mm quadcopter with Pixhawk FC and Raspberry Pi 4 running YOLOv8-nano for real-time aerial survivor detection.",
+    tech: ["Pixhawk", "Raspberry Pi", "YOLOv8"],
+    url: "https://github.com/rushikeshgoud19",
+  },
+  {
+    name: "IBM Hackathon (Top 4)",
+    label: "ML Pipeline",
+    description: "Developed a resilient supply chain optimization tool using ML to predict shortages and optimize routes.",
+    tech: ["Python", "Machine Learning", "Data Sci"],
+    url: "https://github.com/rushikeshgoud19/IBM-Project",
+  },
+  {
+    name: "RUXAILAB (GSoC)",
     label: "Open Source",
-    description: "Usability testing & heuristic evaluation platform for UX research and conceptual learning.",
+    description: "Usability testing & heuristic evaluation platform for UX research. Authored core stability patches.",
     tech: ["Vue.js", "Firebase", "UX Research"],
     url: "https://github.com/rushikeshgoud19/RUXAILAB",
   },
   {
-    name: "HCL Call Center API",
-    label: "Top 4 — IBM",
-    description: "Enterprise-grade call center API built for HCL, achieving top 4 placement in IBM's evaluation.",
-    tech: ["Python", "REST API", "Enterprise"],
-    url: "https://github.com/rushikeshgoud19/hcl-call-center-api",
-  },
-  {
     name: "IPL Prediction Tool",
-    label: "ML",
-    description: "Machine learning model that predicts IPL match outcomes using historical data analysis.",
+    label: "ML Analytics",
+    description: "A predictive analytics tool capable of forecasting IPL match outcomes based on historical datasets.",
     tech: ["Python", "Scikit-learn", "Pandas"],
     url: "https://github.com/rushikeshgoud19/IPL-Prediction-Tool",
-  },
-  {
-    name: "Trading Bot",
-    label: "Finance",
-    description: "Automated trading bot with strategy backtesting and real-time market data integration.",
-    tech: ["Python", "APIs", "Automation"],
-    url: "https://github.com/rushikeshgoud19/Trading_bot",
   },
   {
     name: "Mind Universe",
@@ -66,21 +66,17 @@ export default function ContactCTA() {
             </span>
           </div>
 
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "1.5rem",
-          }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {PROJECTS.map((project, i) => (
               <motion.a
                 key={project.name}
                 href={project.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+                initial={{ opacity: 0, x: -30, filter: "blur(8px)" }}
+                whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.7, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
                 style={{
                   display: "block", textDecoration: "none",
                   padding: "2rem", borderRadius: 16,

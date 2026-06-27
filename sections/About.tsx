@@ -2,10 +2,10 @@ import { motion } from "motion/react";
 import Image from "next/image";
 
 const SKILLS = [
-  { category: "Frontend", items: ["React", "Next.js", "TypeScript", "Three.js", "GSAP"] },
-  { category: "Backend", items: ["Node.js", "Python", "Go", "FastAPI", "PostgreSQL"] },
-  { category: "AI & Data", items: ["Ollama", "LangChain", "Vector DBs", "Claude Code", "PyTorch"] },
-  { category: "DevOps & Cloud", items: ["Docker", "Kubernetes", "GCP", "Terraform", "CI/CD"] },
+  { category: "Languages", items: ["Python", "C++", "Java", "JavaScript", "TypeScript", "SQL"] },
+  { category: "Frameworks", items: ["React", "Next.js", "FastAPI", "Node.js", "Electron", "Tailwind CSS"] },
+  { category: "AI & ML", items: ["Stable Diffusion", "YOLOv8", "Edge TTS", "Multi-Agent Systems", "RAG"] },
+  { category: "Vision & 3D", items: ["MediaPipe", "Blender", "Three.js", "VRM", "WebGL"] },
 ];
 
 export default function About() {
@@ -22,15 +22,16 @@ export default function About() {
           {/* Profile Image Column */}
           <div style={{ position: "relative", height: 500, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(246,243,240,0.1)" }}>
             <Image
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80"
-              alt="Rushikesh"
+              src="/profile.jpg"
+              alt="Rushikesh Goud"
               fill
               style={{ objectFit: "cover" }}
+              unoptimized
             />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(5,5,9,0.9), transparent)" }} />
             <div style={{ position: "absolute", bottom: 24, left: 24 }}>
               <span style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.65rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "#F2D28B", display: "block", marginBottom: 8 }}>
-                Based in India
+                Pilani, India
               </span>
               <h3 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: "2rem", color: "#F6F3F0", fontWeight: 400 }}>
                 Rushikesh Goud
@@ -43,12 +44,15 @@ export default function About() {
             <span style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.6rem", letterSpacing: "0.4em", textTransform: "uppercase", color: "#F2D28B", fontWeight: 500, display: "block", marginBottom: "1.5rem" }}>
               About Me
             </span>
-            <h2 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: "2.5rem", fontWeight: 300, color: "#F6F3F0", lineHeight: 1.2, marginBottom: "1.5rem" }}>
-              AI & Full-Stack Engineer
+            <h2 style={{ fontFamily: '"Cormorant Garamond", serif', fontSize: "clamp(2rem, 5vw, 2.5rem)", fontWeight: 300, color: "#F6F3F0", lineHeight: 1.2, marginBottom: "1.5rem" }}>
+              Software & AI Engineer
             </h2>
+            <p style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.9rem", color: "#9E9EAE", lineHeight: 1.8, fontWeight: 300, marginBottom: "1rem" }}>
+              I am a BSc. Computer Science student at BITS Pilani, specializing in Industry-Focused Software & AI Engineering (NIAT). 
+              My expertise bridges the gap between hardware architecture, multi-agent AI systems, and robust full-stack web applications.
+            </p>
             <p style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.9rem", color: "#9E9EAE", lineHeight: 1.8, fontWeight: 300, marginBottom: "2rem" }}>
-              I specialize in architecting autonomous AI agents, zero-trust security environments, and highly resilient cloud infrastructures. 
-              My focus is on bridging the gap between cutting-edge local LLM inference and production-ready full-stack applications.
+              From contributing core stability patches to open-source initiatives at RUXAILAB to building autonomous UAVs and interactive AI desktop companions, I love pushing the boundaries of what's possible.
             </p>
             
             {/* Resume Button */}
@@ -69,7 +73,7 @@ export default function About() {
             </a>
 
             {/* Tech Stack Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+            <div className="grid grid-cols-2 gap-8 md:gap-x-12 md:gap-y-8">
               {SKILLS.map((skillGroup) => (
                 <div key={skillGroup.category}>
                   <h4 style={{ fontFamily: '"Inter", sans-serif', fontSize: "0.7rem", color: "#F6F3F0", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "1rem" }}>

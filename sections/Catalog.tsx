@@ -62,45 +62,48 @@ export default function Catalog() {
           <p className="label-small" style={{ color: "#F2D28B", marginBottom: "1rem" }}>
             The Mind Universe
           </p>
-          <h2 className="display-heading" style={{ fontSize: "3rem", marginBottom: "2rem" }}>
+          <h2 className="display-heading" style={{ fontSize: "clamp(2rem, 5vw, 3rem)", marginBottom: "2rem" }}>
             Project Modules
           </h2>
           <div style={{ width: 60, height: 1, background: "linear-gradient(to right, transparent, #F2D28B, transparent)", margin: "0 auto" }} />
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "2rem",
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => (
             <div
               key={product.id}
-              className="catalog-card relative group"
+              className="catalog-card relative group p-8 rounded-xl overflow-hidden"
               style={{
-                background: "rgba(255,255,255,0.03)",
+                background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)",
                 border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "4px",
-                padding: "2rem",
-                transition: "all 0.3s ease",
+                boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+                backdropFilter: "blur(12px)",
+                transition: "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
                 cursor: "pointer",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "rgba(242,210,139,0.2)";
-                e.currentTarget.style.transform = "translateY(-4px)";
+                e.currentTarget.style.borderColor = "rgba(242,210,139,0.3)";
+                e.currentTarget.style.transform = "translateY(-6px)";
+                e.currentTarget.style.boxShadow = "0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(242, 210, 139, 0.1)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
                 e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 4px 30px rgba(0, 0, 0, 0.1)";
               }}
               onClick={() => handleDiscover(products.indexOf(product))}
             >
+              {/* Subtle hover glare */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                style={{
+                  background: "radial-gradient(circle at 50% 0%, rgba(242,210,139,0.15), transparent 70%)"
+                }}
+              />
+              <div className="relative z-10">
               <p className="label-small" style={{ color: "#F2D28B", marginBottom: "1rem" }}>
                 {product.chapter}
               </p>
-              <h3 className="display-heading" style={{ fontSize: "2rem", marginBottom: "1rem" }}>
+              <h3 className="display-heading" style={{ fontSize: "clamp(1.5rem, 4vw, 2rem)", marginBottom: "1rem" }}>
                 {product.title}
               </h3>
               <div style={{ height: 1, width: "100%", background: "rgba(242,210,139,0.2)", marginBottom: "1.5rem" }} />
@@ -137,6 +140,7 @@ export default function Catalog() {
                 >
                   Discover →
                 </span>
+              </div>
               </div>
             </div>
           ))}

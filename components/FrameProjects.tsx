@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Frame } from "@/config/frames";
-import { SEGMENTS } from "@/sections/Hero";
+
 
 interface FrameProjectsProps {
   frame: Frame;
@@ -36,25 +36,37 @@ export default function FrameProjects({ frame, progressRef }: FrameProjectsProps
       const p = progressRef.current;
         
       if (tEl) {
-          const op = mapProgress(p, 0.0, 0.15);
-          tEl.style.opacity = op.toString();
-          tEl.style.transform = `translateY(${(1 - op) * 30}px) scale(${0.95 + (op * 0.05)})`;
+        const op = mapProgress(p, 0.0, 0.15).toFixed(3);
+        if (tEl.dataset.op !== op) {
+          tEl.dataset.op = op;
+          tEl.style.opacity = op;
+          tEl.style.transform = `translateY(${(1 - parseFloat(op)) * 30}px) scale(${0.95 + (parseFloat(op) * 0.05)})`;
         }
-        if (p1El) {
-          const op = mapProgress(p, 0.15, 0.35);
-          p1El.style.opacity = op.toString();
-          p1El.style.transform = `translateY(${(1 - op) * 30}px) scale(${0.95 + (op * 0.05)})`;
+      }
+      if (p1El) {
+        const op = mapProgress(p, 0.15, 0.35).toFixed(3);
+        if (p1El.dataset.op !== op) {
+          p1El.dataset.op = op;
+          p1El.style.opacity = op;
+          p1El.style.transform = `translateY(${(1 - parseFloat(op)) * 30}px) scale(${0.95 + (parseFloat(op) * 0.05)})`;
         }
-        if (p2El) {
-          const op = mapProgress(p, 0.45, 0.65);
-          p2El.style.opacity = op.toString();
-          p2El.style.transform = `translateY(${(1 - op) * 30}px) scale(${0.95 + (op * 0.05)})`;
+      }
+      if (p2El) {
+        const op = mapProgress(p, 0.45, 0.65).toFixed(3);
+        if (p2El.dataset.op !== op) {
+          p2El.dataset.op = op;
+          p2El.style.opacity = op;
+          p2El.style.transform = `translateY(${(1 - parseFloat(op)) * 30}px) scale(${0.95 + (parseFloat(op) * 0.05)})`;
         }
-        if (p3El) {
-          const op = mapProgress(p, 0.75, 0.95);
-          p3El.style.opacity = op.toString();
-          p3El.style.transform = `translateY(${(1 - op) * 30}px) scale(${0.95 + (op * 0.05)})`;
+      }
+      if (p3El) {
+        const op = mapProgress(p, 0.75, 0.95).toFixed(3);
+        if (p3El.dataset.op !== op) {
+          p3El.dataset.op = op;
+          p3El.style.opacity = op;
+          p3El.style.transform = `translateY(${(1 - parseFloat(op)) * 30}px) scale(${0.95 + (parseFloat(op) * 0.05)})`;
         }
+      }
 
       rafId = requestAnimationFrame(loop);
     };
@@ -165,8 +177,7 @@ export default function FrameProjects({ frame, progressRef }: FrameProjectsProps
       >
         <div
           style={{
-            background: "linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 100%)",
-            backdropFilter: "blur(16px)",
+            background: "linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 100%)",
             border: "1px solid rgba(242, 210, 139, 0.15)",
             borderRadius: "16px",
             padding: "2rem",
@@ -195,8 +206,7 @@ export default function FrameProjects({ frame, progressRef }: FrameProjectsProps
         >
           <div
             style={{
-              background: "rgba(5, 5, 9, 0.5)",
-              backdropFilter: "blur(12px)",
+              background: "rgba(5, 5, 9, 0.85)",
               border: "1px solid rgba(246, 243, 240, 0.05)",
               borderLeft: "2px solid #F2D28B",
               borderRadius: "8px",
@@ -233,8 +243,7 @@ export default function FrameProjects({ frame, progressRef }: FrameProjectsProps
         >
           <div
             style={{
-              background: "rgba(5, 5, 9, 0.5)",
-              backdropFilter: "blur(12px)",
+              background: "rgba(5, 5, 9, 0.85)",
               border: "1px solid rgba(246, 243, 240, 0.05)",
               borderRight: "2px solid #F2D28B",
               borderRadius: "8px",
@@ -271,8 +280,7 @@ export default function FrameProjects({ frame, progressRef }: FrameProjectsProps
         >
           <div
             style={{
-              background: "rgba(5, 5, 9, 0.5)",
-              backdropFilter: "blur(12px)",
+              background: "rgba(5, 5, 9, 0.85)",
               border: "1px solid rgba(246, 243, 240, 0.05)",
               borderRight: "2px solid #F2D28B",
               borderRadius: "8px",

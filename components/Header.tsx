@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+
+
 
 export default function Header() {
-  const [isExperienceOpen, setIsExperienceOpen] = useState(false);
 
   return (
     <header

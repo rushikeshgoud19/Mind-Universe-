@@ -3,7 +3,7 @@ import { motion } from "motion/react";
 interface LiquidGlassCardProps {
   children: React.ReactNode;
   className?: string;
-  draggable?: boolean;
+
   borderRadius?: string;
   blurIntensity?: "sm" | "md" | "lg" | "xl";
   shadowIntensity?: "none" | "xs" | "sm" | "md" | "lg" | "xl";
@@ -14,7 +14,7 @@ interface LiquidGlassCardProps {
 export function LiquidGlassCard({
   children,
   className,
-  draggable = false,
+
   borderRadius = "16px",
   blurIntensity = "md",
   shadowIntensity = "sm",
