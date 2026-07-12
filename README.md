@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mind Universe 🌌
 
-## Getting Started
+**A cinematic, scroll-driven 3D portfolio — your mind as a universe you travel through.**
 
-First, run the development server:
+🔗 **Live:** [minduni.netlify.app](https://minduni.netlify.app)
+
+Instead of a standard scrolling portfolio page, Mind Universe presents projects as chapters in a journey through space. Each scroll takes you deeper — from an interactive 3D Earth through project "scenes" rendered with looping cinematic video backdrops (genesis, obsidian, lava), with a custom cursor and liquid-glass UI elements tying it together.
+
+## ✨ Highlights
+
+- **Scroll-driven scene system** — projects are defined as declarative "frames" (`config/frames.ts`), each with its own chapter, notes, and tech stack, rendered as full-screen cinematic scenes
+- **Interactive 3D Earth** — a real GLB globe with blue-marble, topology, and water textures, rendered in-browser
+- **Custom cursor + liquid glass UI** — bespoke interaction details instead of stock components
+- **Project modals** — deep-dive overlays for each featured project without leaving the flow
+- **CI-deployed** — auto-deploys to Netlify on push
+
+## 🛠️ Stack
+
+Next.js (Pages Router) · TypeScript · Three.js · Tailwind CSS · Netlify
+
+## 🚀 Run locally
 
 ```bash
+git clone https://github.com/rushikeshgoud19/Mind-Universe-.git
+cd Mind-Universe-
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📐 Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+components/    # Scene components — InteractiveEarth, FrameProjects, ProjectModal, CustomCursor...
+config/        # frames.ts — declarative scene/project definitions
+pages/         # Next.js pages
+public/        # 3D models (earth.glb), textures, cinematic video loops
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Built by [Rushikesh Goud](https://github.com/rushikeshgoud19) · [Portfolio](https://minduni.netlify.app) · [LinkedIn](https://linkedin.com/in/rushikesh-goud)*
